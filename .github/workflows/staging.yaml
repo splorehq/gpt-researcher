@@ -1,4 +1,4 @@
-name: Deploy to EKS Stage using Helm
+name: Deploy GOT to EKS Stage using Helm
 
 on:
   push:
