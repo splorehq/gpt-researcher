@@ -40,13 +40,22 @@ spec:
               protocol: TCP
           env:
             - name: OPENAI_API_KEY
-              value: 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
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: OPENAI_API_KEY
             - name: TAVILY_API_KEY
-              value: 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
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: TAVILY_API_KEY
             - name: LANGCHAIN_API_KEY
               value:
             - name: BING_API_KEY
-              value: 1697c4de3a154040a7e75d58bf4ab5cf
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: BING_API_KEY
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.volumeMounts }}
