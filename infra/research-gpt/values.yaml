@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: 326414016003.dkr.ecr.us-east-1.amazonaws.com/research-agent
+  repository: 326414016003.dkr.ecr.us-east-1.amazonaws.com/gpt-researcher
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"

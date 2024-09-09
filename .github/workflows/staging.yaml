@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION_STAGING: us-east-1
-  ECR_REPOSITORY_STAGING: research-agent
+  ECR_REPOSITORY_STAGING: gpt-researcher
   SHORT_SHA_STAGING: $(echo ${{ github.sha }} | cut -c 1-8)
 
 
@@ -50,7 +50,7 @@ jobs:
         docker push ${{ env.ECR_REGISTRY_STAGING }}/${{ env.ECR_REPOSITORY_STAGING }} --all-tags
 
     - name: Update kube config
-      run: aws eks update-kubeconfig --region us-east-1 --name test-eks-cluster
+      run: aws eks update-kubeconfig --region us-east-1 --name splore-search-eks-cluster
 
     - name: Deploy Research-GPT helm chart to EKS
       env:
