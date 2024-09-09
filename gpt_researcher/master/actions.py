@@ -10,6 +10,7 @@ from gpt_researcher.master.prompts import *
 from gpt_researcher.scraper.scraper import Scraper
 from gpt_researcher.utils.enum import Tone
 from gpt_researcher.utils.llm import *
+from backend.websocket_manager import manager as websocket_manager
 
 
 def get_retriever(retriever):
@@ -110,10 +111,10 @@ def get_retrievers(headers, cfg):
     return [get_retriever(r) or get_default_retriever() for r in retrievers]
 
 
-def get_default_retriever(retriever):
-    from gpt_researcher.retrievers import TavilySearch
+def get_default_retriever():
+    from gpt_researcher.retrievers import TavilySearch, CustomRetriever
 
-    return TavilySearch
+    return CustomRetriever
 
 
 async def choose_agent(
@@ -146,6 +147,7 @@ async def choose_agent(
             llm_provider=cfg.llm_provider,
             llm_kwargs=cfg.llm_kwargs,
             cost_callback=cost_callback,
+            openai_api_key=headers.get("openai_api_key"),
         )
 
         agent_dict = json.loads(response)
@@ -193,6 +195,7 @@ async def get_sub_queries(
     parent_query: str,
     report_type: str,
     cost_callback: callable = None,
+    openai_api_key=None,
 ):
     """
     Gets the sub queries
@@ -227,6 +230,7 @@ async def get_sub_queries(
         llm_provider=cfg.llm_provider,
         llm_kwargs=cfg.llm_kwargs,
         cost_callback=cost_callback,
+        openai_api_key=openai_api_key,
     )
 
     sub_queries = json_repair.loads(response)
@@ -423,10 +427,15 @@ async def generate_report(
     report = ""
 
     if report_type == "subtopic_report":
+        system_prompt_by_report_type = get_system_prompt_by_report_type(report_type)
+        agent_role_prompt = f"{agent_role_prompt}. {system_prompt_by_report_type}. Create a structured, rigorous, but succint analyst insights based on the provided topic and subtopics, and conclude with a list of sources. The report should be presented first, followed by the sources. Do not include a final conclusion section."
         content = f"{generate_prompt(query, existing_headers, relevant_written_contents, main_topic, context, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words)}"
     else:
         content = f"{generate_prompt(query, context, report_source, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words)}"
     try:
+        agent_role_prompt = f" {agent_role_prompt} .You must use only the content provided in the context and the main topic. Do not try to generate content on your own or use external sources."
+        print(f"Generating report for the query {query} with content: {content}")
+        
         report = await create_chat_completion(
             model=cfg.smart_llm_model,
             messages=[
@@ -440,6 +449,7 @@ async def generate_report(
             max_tokens=cfg.smart_token_limit,
             llm_kwargs=cfg.llm_kwargs,
             cost_callback=cost_callback,
+            openai_api_key=headers.get("openai_api_key"),
         )
     except Exception as e:
         print(f"{Fore.RED}Error in generate_report: {e}{Style.RESET_ALL}")
@@ -468,9 +478,11 @@ async def stream_output(
             print(output.encode('cp1252', errors='replace').decode('cp1252'))
 
     if websocket:
-        await websocket.send_json(
+        await websocket_manager.get_active_websocket(websocket).send_json(
             {"type": type, "content": content, "output": output, "metadata": metadata}
         )
+    else:
+        print('No active websocket connection')
 
 
 async def get_report_introduction(

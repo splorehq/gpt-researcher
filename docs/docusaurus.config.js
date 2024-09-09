@@ -10,7 +10,7 @@ module.exports = {
   onBrokenLinks: 'ignore',
   //deploymentBranch: 'master',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/gptr-logo.png',
+  favicon: 'img/favicon.ico',
   organizationName: 'assafelovic',
   trailingSlash: false,
   projectName: 'gpt-researcher',

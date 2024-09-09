@@ -15,6 +15,9 @@ class PublisherAgent:
         
     async def publish_research_report(self, research_state: dict, publish_formats: dict):
         layout = self.generate_layout(research_state)
+        await self.stream_output("status", "publishing", f"Publishing…", self.websocket)
+        await self.stream_output("report", "publishing", f"{layout}.", self.websocket)
+        
         await self.write_report_by_formats(layout, publish_formats)
 
         return layout
@@ -25,7 +28,16 @@ class PublisherAgent:
                                  for key, value in subheader.items())
         references = '\n'.join(f"{reference}" for reference in research_state.get("sources"))
         headers = research_state.get("headers")
-        layout = f"""# {headers.get('title')}
+        task = research_state.get("task")
+        report_style = task.get("report_style")
+
+        if report_style=="summary":
+            layout = f"""# {headers.get('title')}
+{sections}
+## {headers.get("references")}
+{references}"""
+        else:
+            layout = f"""# {headers.get('title')}
 #### {headers.get("date")}: {research_state.get('date')}
 
 ## {headers.get("introduction")}
@@ -40,8 +52,7 @@ class PublisherAgent:
 {research_state.get('conclusion')}
 
 ## {headers.get("references")}
-{references}
-"""
+{references}"""
         return layout
 
     async def write_report_by_formats(self, layout:str, publish_formats: dict):

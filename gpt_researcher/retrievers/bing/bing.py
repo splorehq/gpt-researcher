@@ -65,11 +65,12 @@ class BingSearch():
             return
         try:
             search_results = json.loads(resp.text)
-            results = search_results["webPages"]["value"]
         except Exception:
             return
         if search_results is None:
             return
+
+        results = search_results["webPages"]["value"]
         search_results = []
 
         # Normalize the results to match the format of the other search APIs
@@ -83,5 +84,65 @@ class BingSearch():
                 "body": result["snippet"],
             }
             search_results.append(search_result)
+        print(f"Bing search_results: {search_results}")
+        return search_results
 
+    def search(self, max_results=7, search_depth=None, include_domains=None, exclude_domains=None):
+        """
+        Searches the query
+        Returns:
+
+        """
+        print("Searching with query {0}...".format(self.query))
+        """Useful for general internet search queries using the Bing API."""
+
+
+        # Search the query
+        url = "https://api.bing.microsoft.com/v7.0/search"
+
+        headers = {
+        'Ocp-Apim-Subscription-Key': self.api_key,
+        'Content-Type': 'application/json'
+        }
+        if include_domains and len(include_domains) > 0:
+            site_vale = " OR ".join(include_domains)
+            self.query = f"{self.query} site:({site_vale})"
+            
+        params = {
+            "responseFilter" : "Webpages",
+            "q": self.query,
+            "count": max_results,
+            "setLang": "en-GB",
+            "textDecorations": False,
+            "textFormat": "HTML",
+            "safeSearch": "Strict"
+        }
+        
+        resp = requests.get(url, headers=headers, params=params)
+
+        # Preprocess the results
+        if resp is None:
+            return
+        try:
+            search_results = json.loads(resp.text)
+        except Exception:
+            return
+        if search_results is None:
+            return
+
+        results = search_results["webPages"]["value"]
+        search_results = []
+
+        # Normalize the results to match the format of the other search APIs
+        for result in results:
+            # skip youtube results
+            if "youtube.com" in result["url"]:
+                continue
+            search_result = {
+                "title": result["name"],
+                "href": result["url"],
+                "body": result["snippet"],
+            }
+            search_results.append(search_result)
+        print(f"Bing search_results: {search_results}")
         return search_results

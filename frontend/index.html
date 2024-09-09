@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <title>GPT Researcher</title>
-    <meta name="description" content="A research assistant powered by GPT-4">
+    <title>Splore Researcher</title>
+    <meta name="description" content="A research assistant powered by Splore">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="./static/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,7 @@
         .avatar {
             width: 80px;
             height: 80px;
-            border-radius: 50%;
+
         }
 
         .agent-name {
@@ -26,6 +26,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 80%; margin: auto;
         }
 
         .agent-choices {
@@ -40,39 +41,23 @@
 
 <body>
 
-    <section class="landing">
-        <div class="max-w-5xl mx-auto text-center">
-            <h1 class="text-4xl font-extrabold mx-auto lg:text-7xl">
-                Say Goodbye to <br>
-                <span
-                    style="background-image:linear-gradient(to right, #9867F0, #ED4E50); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hours
-                    of Research</span>
-            </h1>
-            <p class="max-w-5xl mx-auto text-gray-600 mt-8" style="font-size:20px">
-                Say Hello to GPT Researcher, your AI mate for rapid insights and comprehensive research. GPT Researcher
-                takes care of everything from accurate source gathering to organization of research results - all in one
-                platform designed to make your research process a breeze.
-            </p>
-            <a href="#form" class="btn btn-primary">Get Started</a>
-        </div>
-    </section>
-
     <main class="container" id="form">
-        <div class="agent-item"><img src="/static/gptr-logo.png" class="avatar" alt="Auto Agent"></div>
-        <form method="POST" class="mt-3" onsubmit="GPTResearcher.startResearch(); return false;">
-            <div class="form-group">
-                <label for="task" class="agent-question">What would you like me to research next?</label>
-                <input id="task" name="task" class="form-control" required></input>
-                <input type="radio" name="agent" id="autoAgent" value="Auto Agent" checked hidden>
+
+
+        <div class="agent-item">
+            <div style="display: flex; align-items: center; justify-content: center;">
+                <img style="width: 50px; height: 50px; " src="/site/agent.png" class="avatar" alt="Auto Agent">
+                <h1 style="margin: 20px">Researcher</h1>
             </div>
-            <div class="form-group">
-                <div class="row">
 
-
+            <form method="POST" class="mt-3" style="width: 100%;" onsubmit="GPTResearcher.startResearch(); return false;">
+                <div class="form-group">
+                    <label for="task" class="agent-question">What would you like me to research next?</label>
+                    <input id="task" name="task" class="form-control" required></input>
+                    <input type="radio" name="agent" id="autoAgent" value="Auto Agent" checked hidden>
                 </div>
-                <button type="button" id="btnShowAuto" class="btn btn-secondary mt-3 btn-show">Auto Agent</button>
-            </div>
-            <div class="form-group">
+
+                <!--div class="form-group">
                 <label for="report_type" class="agent-question">What type of report would you like me to
                     generate?</label>
                 <select name="report_type" class="form-control" required>
@@ -80,23 +65,23 @@
                     <option value="detailed_report">Detailed - In depth and longer (~5 min)</option>
                     <option value="resource_report">Resource Report</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <label for="tone" class="agent-question">In which tone would you like the report to be
-                    generated?</label>
-                <select name="tone" id="tone" class="form-control" required>
-                    <option value="Objective">Objective - Impartial and unbiased presentation of facts and findings
-                    </option>
-                    <option value="Formal">Formal - Adheres to academic standards with sophisticated language and
-                        structure</option>
-                    <option value="Analytical">Analytical - Critical evaluation and detailed examination of data and
-                        theories</option>
-                    <option value="Persuasive">Persuasive - Convincing the audience of a particular viewpoint or
+            </div-->
+                <div class="form-group">
+                    <label for="tone" class="agent-question">In which tone would you like the report to be
+                        generated?</label>
+                    <select name="tone" id="tone" class="form-control" required>
+                        <option value="Objective">Objective - Impartial and unbiased presentation of facts and findings
+                        </option>
+                        <option value="Formal">Formal - Adheres to academic standards with sophisticated language and
+                            structure</option>
+                        <option value="Analytical">Analytical - Critical evaluation and detailed examination of data and
+                            theories</option>
+                        <!--option value="Persuasive">Persuasive - Convincing the audience of a particular viewpoint or
                         argument</option>
                     <option value="Informative">Informative - Providing clear and comprehensive information on a topic
-                    </option>
-                    <option value="Explanatory">Explanatory - Clarifying complex concepts and processes</option>
-                    <option value="Descriptive">Descriptive - Detailed depiction of phenomena, experiments, or case
+                    </option-->
+                        <option value="Explanatory">Explanatory - Clarifying complex concepts and processes</option>
+                        <!--option value="Descriptive">Descriptive - Detailed depiction of phenomena, experiments, or case
                         studies</option>
                     <option value="Critical">Critical - Judging the validity and relevance of the research and its
                         conclusions</option>
@@ -113,48 +98,59 @@
                     <option value="Optimistic">Optimistic - Highlighting positive findings and potential benefits
                     </option>
                     <option value="Pessimistic">Pessimistic - Focusing on limitations, challenges, or negative outcomes
-                    </option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="report_source" class="agent-question">What sources would you like me to research
-                    from?</label>
-                <p class="text-left mt-0 pt-0" style="font-size: 0.7rem;">You can now do research on local documents as
-                    well. Please make sure to add the DOC_PATH env variable pointing to your documents folder.</p>
-                <select name="report_source" class="form-control" required>
-                    <option value="web">The Web</option>
-                    <option value="local">My Documents</option>
-                    <option value="hybrid">Hybrid</option>
-                </select>
-            </div>
-            <input type="submit" value="Research" class="btn btn-primary button-padding">
-        </form>
+                    </option-->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="report_style" class="agent-question">In which style you like the research output to be
+                        generated ?</label>
+                    <select name="report_style" class="form-control" required>
+                        <option value="detailed report">Detailed Report</option>
+                        <option value="summary">Executive Summary</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="report_source" class="agent-question">What sources would you like me to research
+                        from?</label>
+                    <!--p class="text-left mt-0 pt-0" style="font-size: 0.7rem;">You can now do research on local documents as
+                    well. Please make sure to add the DOC_PATH env variable pointing to your documents folder.</p-->
+                    <select name="report_source" class="form-control" required>
+                        <option value="web">The Web</option>
+                        <option value="splore">Splore Index</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <input type="submit" value="Research" class="btn btn-primary button-padding">
+            </form>
 
-        <div class="margin-div">
-            <h2>Agent Output</h2>
-            <p class="mt-2 text-left" style="font-size: 0.8rem;">An agent tailored specifically to your task
-                will be generated to provide the most precise and relevant research results.</p>
-            <div id="output"></div>
-        </div>
-        <div class="margin-div">
-            <h2>Research Report</h2>
-            <div id="reportContainer"></div>
-            <div id="reportActions">
-                <div class="alert alert-info" role="alert" id="status"></div>
-                <a id="copyToClipboard" onclick="GPTResearcher.copyToClipboard()" class="btn btn-secondary mt-3"
-                    style="margin-right: 10px;">Copy to clipboard (markdown)</a>
-                <a id="downloadLinkMd" href="#" class="btn btn-secondary mt-3" style="margin-right: 10px;"
-                    target="_blank">Download as Markdown</a>
-                <a id="downloadLink" href="#" class="btn btn-secondary mt-3" style="margin-right: 10px;"
-                    target="_blank">Download as PDF</a>
-                <a id="downloadLinkWord" href="#" class="btn btn-secondary mt-3" target="_blank">Download as Docx</a>
+            <div class="margin-div" style="width: 100%;">
+                <h2>Agent Output</h2>
+                <p class="mt-2 text-left" style="font-size: 0.8rem;">An agent tailored specifically to your task
+                    will be generated to provide the most precise and relevant research results.</p>
+                <div id="output"></div>
             </div>
-        </div>
+            <div class="margin-div" style="width: 100%;"> 
+                <h2>Research Report</h2>
+                <div id="reportContainer"></div>
+                <div id="reportActions">
+                    <div class="alert alert-info" role="alert" id="status"></div>
+                    <a id="copyToClipboard" onclick="GPTResearcher.copyToClipboard()" class="btn btn-secondary mt-3"
+                        style="margin-right: 10px;">Copy to clipboard (markdown)</a>
+                    <a id="downloadLinkMd" href="#" class="btn btn-secondary mt-3" style="margin-right: 10px;"
+                        target="_blank">Download as Markdown</a>
+                    <a id="downloadLink" href="#" class="btn btn-secondary mt-3" style="margin-right: 10px;"
+                        target="_blank">Download as PDF</a>
+                    <a id="downloadLinkWord" href="#" class="btn btn-secondary mt-3" target="_blank">Download as
+                        Docx</a>
+                </div>
+            </div>
     </main>
 
     <footer>
-        <p>GPT Researcher &copy; 2024 | <a target="_blank" href="https://github.com/assafelovic/gpt-researcher">GitHub
-                Page</a></p>
+        <p style="margin: 0;">Powered by <a target="_blank" href="https://splore.com/">
+                <img src="https://splore.com/hubfs/Splore/images/Logo/Splore-Logo.svg" style="width: 60px;"
+                    class="avatar" alt="Auto Agent">
+            </a></p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
@@ -184,15 +180,15 @@
         const tagsInput = document.getElementById('tags-input');
         const input = document.getElementById('custom_source');
 
-        input.addEventListener('keypress', function (e) {
-            if ((e.key === 'Enter' || e.key === ",") && input.value !== '') {
-                e.preventDefault();
-                GPTResearcher.addTag(input.value);
-                input.value = '';
-            }
-        });
+        // input.addEventListener('keypress', function (e) {
+        //     if ((e.key === 'Enter' || e.key === ",") && input.value !== '') {
+        //         e.preventDefault();
+        //         GPTResearcher.addTag(input.value);
+        //         input.value = '';
+        //     }
+        // });
 
-</script>
+    </script>
 </body>
 
 </html>

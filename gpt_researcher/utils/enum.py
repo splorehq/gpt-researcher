@@ -12,10 +12,9 @@ class ReportType(Enum):
 
 class ReportSource(Enum):
     Web = "web"
-    Local = "local"
+    Local = "splore"
     LangChainDocuments = "langchain_documents"
-    LangChainVectorStore = "langchain_vectorstore"
-    Static = "static"
+    Sources = "sources"
     Hybrid = "hybrid"
 
 

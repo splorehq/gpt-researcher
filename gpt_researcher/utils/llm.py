@@ -22,9 +22,10 @@ def get_llm(llm_provider, **kwargs):
 async def create_chat_completion(
         messages: list,  # type: ignore
         model: Optional[str] = None,
-        temperature: float = 0.4,
-        max_tokens: Optional[int] = 4000,
+        temperature: float = 1.0,
+        max_tokens: Optional[int] = None,
         llm_provider: Optional[str] = None,
+        openai_api_key=None,
         stream: Optional[bool] = False,
         websocket: Any | None = None,
         llm_kwargs: Dict[str, Any] | None = None,
@@ -43,6 +44,7 @@ async def create_chat_completion(
     Returns:
         str: The response from the chat completion
     """
+
     # validate input
     if model is None:
         raise ValueError("Model cannot be None")

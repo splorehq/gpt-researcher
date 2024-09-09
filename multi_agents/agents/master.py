@@ -19,7 +19,7 @@ from . import \
 
 class ChiefEditorAgent:
     def __init__(self, task: dict, websocket=None, stream_output=None, tone=None, headers=None):
-        self.task_id = int(time.time()) # Currently time based, but can be any unique identifier
+        self.task_id = task["task_id"]#int(time.time()) # Currently time based, but can be any unique identifier
         self.output_dir = "./outputs/" + sanitize_filename(f"run_{self.task_id}_{task.get('query')[0:40]}")
         self.task = task
         self.websocket = websocket
@@ -49,6 +49,7 @@ class ChiefEditorAgent:
 
         workflow.add_edge('browser', 'planner')
         workflow.add_edge('planner', 'human')
+        workflow.add_edge('human', 'researcher')
         workflow.add_edge('researcher', 'writer')
         workflow.add_edge('writer', 'publisher')
 
@@ -57,9 +58,9 @@ class ChiefEditorAgent:
         workflow.add_edge('publisher', END)
 
         # Add human in the loop
-        workflow.add_conditional_edges('human',
-                                       (lambda review: "accept" if review['human_feedback'] is None else "revise"),
-                                       {"accept": "researcher", "revise": "planner"})
+        # workflow.add_conditional_edges('human',
+        #                                (lambda review: "revise" if review['human_feedback'] else "accept"),
+        #                                {"accept": "researcher", "revise": "planner"})
 
         return workflow
 
