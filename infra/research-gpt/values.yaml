@@ -48,7 +48,7 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-  - host: research-gpt-itgdompefa-yjhln.search.splore.st
+  - host: gpt-researcher.search.splore.st
     paths:
     - path: /
       pathType: Prefix
