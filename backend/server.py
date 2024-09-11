@@ -76,7 +76,7 @@ async def websocket_endpoint(websocket: WebSocket):
             if data.startswith("start"):
                 json_data = json.loads(data[6:])
                 task = json_data.get("task")
-                report_type = json_data.get("report_type")
+                report_type = "multi_agents"
                 source_urls = json_data.get("source_urls")
                 tone = json_data.get("tone")
                 headers = json_data.get("headers", {})

@@ -7,12 +7,14 @@
     "docx": true
   },
   "include_human_feedback": false,
-  "follow_guidelines": false,
+  "follow_guidelines": true,
   "model": "gpt-4o",
   "guidelines": [
-    "The report MUST be written in APA format",
-    "Each sub section MUST include supporting sources using hyperlinks. If none exist, erase the sub section or rewrite it to be a part of the previous section",
-    "The report MUST be written in spanish"
+    "Give equal importance to Local Documents and Web Documents while creating the report.\n",
+    "Each sub section MUST include supporting sources using hyperlinks. If none exist, erase the sub section or rewrite it to be a part of the previous section\n",
+    "Give response in Markdown format to make it look beautiful.\n",
+    "Make sure that the citations are always external, not the document itself. For example the link should not be '#', which means that the document is citing to itself.\n",
+    "The links in the citations should not be dummy, for say, 'example.com', 'sample.com' etc.,"
   ],
   "verbose": true
 }
