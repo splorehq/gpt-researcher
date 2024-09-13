@@ -80,13 +80,14 @@ class EditorAgent:
 
         # set up edges researcher->reviewer->reviser->reviewer...
         workflow.set_entry_point("researcher")
-        workflow.add_edge("researcher", "reviewer")
-        workflow.add_edge("reviser", "reviewer")
-        workflow.add_conditional_edges(
-            "reviewer",
-            (lambda draft: "accept" if draft["review"] is None else "revise"),
-            {"accept": END, "revise": "reviser"},
-        )
+        workflow.add_edge('researcher', 'reviewer')
+        workflow.add_edge('reviewer', 'reviser')
+        workflow.add_edge('reviser', END)
+        # workflow.add_conditional_edges(
+        #     "reviewer",
+        #     (lambda draft: "accept" if draft["review"] is None else "revise"),
+        #     {"accept": END, "revise": "reviser"},
+        # )
 
         chain = workflow.compile()
 
