@@ -40,8 +40,13 @@ const GPTResearcher = (() => {
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
+      console.log(data)
       if (data.type === 'logs') {
         addAgentResponse(data)
+      } else if (data.type === 'human_feedback') {
+        socket.send(
+          JSON.stringify({ type: 'human_feedback', value: data.output })
+        )
       } else if (data.type === 'report') {
         writeReport(data, converter)
       } else if (data.type === 'path') {
@@ -52,9 +57,9 @@ const GPTResearcher = (() => {
 
     socket.onopen = (event) => {
       const task = document.querySelector('input[name="task"]').value
-      const report_type = document.querySelector(
-        'select[name="report_type"]'
-      ).value
+//      const report_type = document.querySelector(
+//        'select[name="report_type"]'
+//      ).value
       const report_source = document.querySelector(
         'select[name="report_source"]'
       ).value
@@ -67,13 +72,14 @@ const GPTResearcher = (() => {
       }
 
       const requestData = {
-        task: task,
-        report_type: report_type,
-        report_source: report_source,
-        source_urls: source_urls,
-        tone: tone,
-        agent: agent,
-      }
+        type: "init",
+        value: {
+          task: task,
+          report_source: report_source,
+          tone: tone,
+          agent: agent,
+        },
+      };
 
       socket.send(`start ${JSON.stringify(requestData)}`)
     }
