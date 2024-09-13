@@ -40,4 +40,4 @@ class HumanAgent:
 
         print(f"User feedback before return: {user_feedback}")
 
-        return {"human_feedback": user_feedback}
+        return {"sections": user_feedback}

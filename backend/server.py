@@ -83,7 +83,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 report_type = "multi_agents"
                 report_style = json_data["value"].get("report_style")
                 source_urls = json_data["value"].get("source_urls")
-                agent_specialization = json_data["value"].get("agent_specialization")
+                agent_specialization = ""#json_data["value"].get("agent_specialization")
                 tone = json_data["value"].get("tone")
                 headers = json_data["value"].get("headers", {})
                 filename = f"task_{int(time.time())}_{task}"
