@@ -29,7 +29,7 @@ class HumanAgent:
                     print(f"Received response: {response}", flush=True)
                     response_data = json.loads(response)
                     if response_data.get("type") == "human_feedback":
-                        user_feedback = response_data.get("content")
+                        user_feedback = response_data.get("value")
                     else:
                         print(
                             f"Unexpected response type: {response_data.get('type')}",
