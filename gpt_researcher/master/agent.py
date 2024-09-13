@@ -36,7 +36,8 @@ class GPTResearcher:
         visited_urls: set = set(),
         verbose: bool = True,
         context=[],
-        headers: dict = None,  # Add headers parameter
+        headers: dict = None,
+        include_domains = None  # Add headers parameter
     ):
         """
         Initialize the GPT Researcher class.
@@ -91,6 +92,7 @@ class GPTResearcher:
 
         # Stores all the user provided subtopics
         self.subtopics = subtopics
+        self.include_domains = include_domains
 
     async def conduct_research(self):
         """
@@ -151,7 +153,7 @@ class GPTResearcher:
             self.context = await self.__get_context_by_vectorstore(self.query, self.vector_store_filter)
         # Default web based research
         else:
-            self.context = await self.__get_context_by_search(self.query)
+            self.context = await self.__get_context_by_search(self.query, include_domains=self.include_domains)
 
         time.sleep(2)
         if self.verbose:
@@ -264,7 +266,7 @@ class GPTResearcher:
         )
         return context
 
-    async def __get_context_by_search(self, query, scraped_data: list = []):
+    async def __get_context_by_search(self, query, scraped_data: list = [], include_domains=None):
         """
            Generates the context for the research task by searching the query and scraping the results
         Returns:

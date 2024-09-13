@@ -19,6 +19,8 @@ class ReviewerAgent:
         :return:
         """
         task = draft_state.get("task")
+        query = task.get("query")
+        topic = draft_state.get("topic")
         guidelines = "- ".join(guideline for guideline in task.get("guidelines"))
         revision_notes = draft_state.get("revision_notes")
 
@@ -34,7 +36,9 @@ If not all of the guideline criteria are met, you should send appropriate revisi
 If the draft meets all the guidelines, please return None.
 {revise_prompt if revision_notes else ""}
 
-Guidelines: {guidelines}\nDraft: {draft_state.get("draft")}\n
+Guidelines: {guidelines}
+- "The content should not have any sections like 'Introduction', 'Conclusion' and 'References'."
+Draft: {draft_state.get("draft")}\n
 """
         prompt = [
             {"role": "system", "content": TEMPLATE},
@@ -64,9 +68,11 @@ Guidelines: {guidelines}\nDraft: {draft_state.get("draft")}\n
         task = draft_state.get("task")
         guidelines = task.get("guidelines")
         to_follow_guidelines = task.get("follow_guidelines")
+        query = task.get("query")
+        topic = draft_state.get("topic")
         review = None
         if to_follow_guidelines:
-            print_agent_output(f"Reviewing draft...", agent="REVIEWER")
+            print_agent_output(f"Reviewing draft for the Query '{query}' and sub-topic '{topic}'...", agent="REVIEWER")
 
             if task.get("verbose"):
                 print_agent_output(
