@@ -29,7 +29,9 @@ def generate_search_queries_prompt(
         task = question
 
     return (
-        f'Write {max_iterations} google search queries to search online that form an objective opinion from the following task: "{task}"'
+        f'Write {max_iterations} google search queries to search online that form an objective opinion from the following task: "{task}"\n'
+        f'Make sure that the queries are diverse covering mutiple horizons like "Idustrial", "Investments", "Science" and "Technology " if the "{task}" is suitable for them.\n'
+        f'The current day date is: "{datetime.now().strftime("%d-%m-%Y")}", make sure the questions are relevant for this date.\n'
         f'You must respond with a list of strings in the following format: ["query 1", "query 2", "query 3"].\n'
         f"The response should contain ONLY the list."
     )
@@ -78,6 +80,7 @@ Please follow all of the following guidelines in your report:
 - You MUST write the report with markdown syntax and {report_format} format.
 - Use an unbiased and journalistic tone.
 - Use in-text citation references in {report_format} format and make it with markdown hyperlink placed at the end of the sentence or paragraph that references them like this: ([in-text citation](url)).
+- Make sure that the citations are valid and the name of the Hyperlink shallbe meaningful, instead of just saying 'example.com', 'sample.com' etc.,
 - Don't forget to add a reference list at the end of the report in {report_format} format and full url links without hyperlinks.
 - {reference_prompt}
 - {tone_prompt}
@@ -272,7 +275,7 @@ You must limit the number of subsections to a maximum of {max_subsections}.
     {relevant_written_contents}
 
 "Structure and Formatting":
-- As this sub-report will be part of a larger report, include only the main body divided into suitable subtopics without any introduction or conclusion section.
+- As this sub-report will be part of a larger report, include only the main body divided into suitable subtopics without any 'Introduction' or 'Conclusion' section.
 
 - You MUST include markdown hyperlinks to relevant source URLs wherever referenced in the report, for example:
 
@@ -293,12 +296,17 @@ You must limit the number of subsections to a maximum of {max_subsections}.
 Assume the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y')} if required.
 
 "IMPORTANT!":
+- Make sure that the content is latest with respect to the current date {datetime.now().strftime("%d-%m-%Y")} in 'dd-mm-yyyy' format.
+- You must use only the content provided in the context and the main topic. Do not try to generate content on your own or use external sources.
 - The focus MUST be on the main topic! You MUST Leave out any information un-related to it!
-- Must NOT have any introduction, conclusion, summary or reference section.
+- Stricty it Must NOT have any 'Introduction', 'Conclusion', 'Summary' or 'References' section.
 - You MUST include hyperlinks with markdown syntax ([url website](url)) related to the sentences wherever necessary.
+- Make sure that the citations are valid and the name of the Hyperlink shall be meaningful, instead of just saying 'example.com', 'sample.com' etc.,
 - You MUST mention the difference between the existing content and the new content in the report if you are adding the similar or same subsections wherever necessary.
 - The report should have a minimum length of {total_words} words.
 - Use an {tone.value} tone throughout the report.
+- Please include tables in the report where appropriate, ensuring that they are meaningful and based on the available data. The tables should provide clear value to the analysis and not be added merely for the sake of including them."
+- Do not insert tables for the sake of inserting them with some hallucinated data.
 """
 
 
@@ -367,3 +375,25 @@ def get_prompt_by_report_type(report_type):
         )
         prompt_by_type = report_type_mapping.get(default_report_type)
     return prompt_by_type
+
+
+def get_system_prompt_by_report_type(report_type):
+    system_prompt_by_type = ""
+    if report_type=="subtopic_report":
+        system_prompt_by_type = """**Guidelines for Analyst Insights Creation:**
+0. **Succint but rigorous**: Avoid unncessary introductions/conclusions, FOCUS on the TOPIC at hand. YOUR READER IS A BUSY PERSON
+1. **Structure and Clarity:** Utilize headers for each subtopic and employ lists and text formatting (such as bold and italics) to enhance readability.
+2. **Content Development:** Use the provided subtopics as headings for your report sections. Each section should thoroughly address the relevant content extracted from the documents.
+3. **Detail and Accuracy:** When referencing figures or dates, ensure accuracy by specifying units, currency, and the relevant fiscal or calendar year.
+4. **Analytical Depth:** Provide detailed explanations of any calculations or analytical processes you undertake.
+5. **Presentation:** Organize information using bullet points where applicable to improve clarity and conciseness.
+6. **Source Citation:** List all sources in each section, through use of citation numbers [1], [2], [4]. At end of output, also format each numbered source entry with the source name and page number, and include a hyperlink to the document. Example format: [1] [Source Name](link#page=number)...
+7. **Bias Consideration:** If a source is marked with a bias (especially from company documents), critically evaluate its claims. Indicate potential bias by prefacing information with phrases like "According to [Source]" or "The company claims."
+8. **Citation Style:** Adhere strictly to the provided citation style for consistency and clarity.
+9. **Use of Tables:** In sections with dense information or clear data trends, incorporate tables with citations to simplify complex data whereever possible.
+10. **Language Consistency:** Always present your report in English. For non-English source material, include original terms in brackets next to their English translations, particularly for specialized jargon or unique phrases.
+11. **High Quality and Insightful Suggestions**: Come up with detailed areas of further dilligence, which are very precise and can be done with deep/dives, more access to datasets. Propose datasets to request
+12. **Careful & Nuanced Use of Web Search Results**: When web search results are provided, use them in a nuanced fashion, e.g: "Based on web results......, more research/cross checking could be done"
+13. **Markdown Output**: Markdown TABLES ONLY, ABSOLUTELY HTML
+14. **CLEAR CITATIONS**: ALL CITATIONS MUST INCLUDE URL WHENEVER POSSIBLE"""
+    return system_prompt_by_type
