@@ -14,24 +14,30 @@ class HumanAgent:
         layout = research_state.get("sections")
 
         user_feedback = layout
-        
+
         if task.get("include_human_feedback"):
-            # Stream response to the user if a websocket is provided
+            # Stream response to the user if a websocket is provided (such as from web app)
             if self.websocket and self.stream_output:
                 try:
                     await self.stream_output("human_feedback", "request", layout, self.websocket)
                     response = await self.websocket.receive_text()
-                    response = json.loads(response)
-                    # response = {
-                    #     "type": 'human_feedback',
-                    #     "value": layout
-                    # }
-                    # print(f"Received response: {response["value"]}")  # Add this line for debugging
-                    user_feedback = response["value"]
+                    print(f"Received response: {response}", flush=True)
+                    response_data = json.loads(response)
+                    if response_data.get("type") == "human_feedback":
+                        user_feedback = response_data.get("value")
+                    else:
+                        print(
+                            f"Unexpected response type: {response_data.get('type')}",
+                            flush=True,
+                        )
                 except Exception as e:
-                    print(f"Error receiving human feedback: {e}")
+                    print(f"Error receiving human feedback: {e}", flush=True)
             # Otherwise, prompt the user for feedback in the console
             else:
-                user_feedback = input(f"Any feedback on this plan? {layout}? If not, please reply with 'no'.\n>> ")
+                user_feedback = input(
+                    f"Any feedback on this plan? {layout}? If not, please reply with 'no'.\n>> "
+                )
 
-        return {"sections": user_feedback}
+        print(f"User feedback before return: {user_feedback}")
+
+        return {"human_feedback": user_feedback}
