@@ -27,7 +27,16 @@ class PublisherAgent:
                                  for key, value in subheader.items())
         references = '\n'.join(f"{reference}" for reference in research_state.get("sources"))
         headers = research_state.get("headers")
-        layout = f"""# {headers.get('title')}
+        task = research_state.get("task")
+        report_style = task.get("report_style")
+
+        if report_style=="summary":
+            layout = f"""# {headers.get('title')}
+{sections}
+## {headers.get("references")}
+{references}"""
+        else:
+            layout = f"""# {headers.get('title')}
 #### {headers.get("date")}: {research_state.get('date')}
 
 ## {headers.get("introduction")}
