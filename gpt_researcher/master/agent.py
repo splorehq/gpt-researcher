@@ -205,6 +205,7 @@ class GPTResearcher:
         if self.report_type == "subtopic_report":
             report_params.update({
                 "main_topic": self.parent_query,
+                "websocket": None,
                 "existing_headers": existing_headers,
                 "relevant_written_contents": relevant_written_contents,
                 "cost_callback": self.add_costs,
