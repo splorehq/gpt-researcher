@@ -15,6 +15,8 @@ class PublisherAgent:
         
     async def publish_research_report(self, research_state: dict, publish_formats: dict):
         layout = self.generate_layout(research_state)
+        await self.stream_output("status", "publishing", f"Publishing…", self.websocket)
+        await self.stream_output("report", "publishing", f"{layout}.", self.websocket)
         await self.write_report_by_formats(layout, publish_formats)
 
         return layout
