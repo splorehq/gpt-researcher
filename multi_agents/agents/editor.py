@@ -66,28 +66,36 @@ class EditorAgent:
         }
 
     async def run_parallel_research(self, research_state: dict):
+        task = research_state.get("task")
+        report_style = task.get("report_style")
+        
         research_agent = ResearchAgent(self.websocket, self.stream_output, self.headers)
-        reviewer_agent = ReviewerAgent(self.websocket, self.stream_output, self.headers)
-        reviser_agent = ReviserAgent(self.websocket, self.stream_output, self.headers)
         queries = research_state.get("sections")
         title = research_state.get("title")
+        
         human_feedback = research_state.get("human_feedback")
         workflow = StateGraph(DraftState)
 
         workflow.add_node("researcher", research_agent.run_depth_research)
-        workflow.add_node("reviewer", reviewer_agent.run)
-        workflow.add_node("reviser", reviser_agent.run)
-
-        # set up edges researcher->reviewer->reviser->reviewer...
         workflow.set_entry_point("researcher")
-        workflow.add_edge('researcher', 'reviewer')
-        workflow.add_edge('reviewer', 'reviser')
-        workflow.add_edge('reviser', END)
-        # workflow.add_conditional_edges(
-        #     "reviewer",
-        #     (lambda draft: "accept" if draft["review"] is None else "revise"),
-        #     {"accept": END, "revise": "reviser"},
-        # )
+
+        if report_style != "summary":
+            reviewer_agent = ReviewerAgent(self.websocket, self.stream_output, self.headers)
+            reviser_agent = ReviserAgent(self.websocket, self.stream_output, self.headers)
+            workflow.add_node("reviewer", reviewer_agent.run)
+            workflow.add_node("reviser", reviser_agent.run)
+
+            # set up edges researcher->reviewer->reviser->reviewer...
+        
+            workflow.add_edge('researcher', 'reviewer')
+            workflow.add_edge('reviewer', 'reviser')
+            workflow.add_edge('reviser', END)
+
+            # workflow.add_conditional_edges(
+            #     "reviewer",
+            #     (lambda draft: "accept" if draft["review"] is None else "revise"),
+            #     {"accept": END, "revise": "reviser"},
+            # )
 
         chain = workflow.compile()
 

@@ -80,10 +80,12 @@ async def websocket_endpoint(websocket: WebSocket):
             if data.startswith("start"):
                 json_data = json.loads(data[6:])
                 task = json_data["value"].get("task")
+                task_id = int(time.time())
+                
                 report_type = "multi_agents"
                 report_style = json_data["value"].get("report_style")
                 source_urls = json_data["value"].get("source_urls")
-                agent_specialization = ""#json_data["value"].get("agent_specialization")
+                agent_specialization = json_data["value"].get("agent_specialization")
                 tone = json_data["value"].get("tone")
                 headers = json_data["value"].get("headers", {})
                 filename = f"task_{int(time.time())}_{task}"
@@ -93,7 +95,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 report_source = json_data.get("report_source")
                 if task and report_type:
                     report = await manager.start_streaming(
-                        task, report_type, report_source, source_urls, tone, websocket, headers
+                        task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization
                     )
                     # Ensure report is a string
                     if not isinstance(report, str):

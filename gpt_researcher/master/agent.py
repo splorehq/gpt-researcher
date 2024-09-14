@@ -37,7 +37,8 @@ class GPTResearcher:
         verbose: bool = True,
         context=[],
         headers: dict = None,
-        include_domains = None  # Add headers parameter
+        include_domains = None,
+        search_query_instructions = None
     ):
         """
         Initialize the GPT Researcher class.
@@ -93,6 +94,7 @@ class GPTResearcher:
         # Stores all the user provided subtopics
         self.subtopics = subtopics
         self.include_domains = include_domains
+        self.search_query_instructions = search_query_instructions
 
     async def conduct_research(self):
         """
@@ -122,6 +124,10 @@ class GPTResearcher:
                 cost_callback=self.add_costs,
                 headers=self.headers,
             )
+
+        #overrite the search query prompt if it is provided in the config
+        if self.search_query_instructions:
+            self.role = self.search_query_instructions
 
         if self.verbose:
             await stream_output("logs", "agent_generated", self.agent, self.websocket)
@@ -293,7 +299,7 @@ class GPTResearcher:
         # Using asyncio.gather to process the sub_queries asynchronously
         context = await asyncio.gather(
             *[
-                self.__process_sub_query(sub_query, scraped_data)
+                self.__process_sub_query(sub_query, scraped_data, include_domains)
                 for sub_query in sub_queries
             ]
         )
@@ -331,7 +337,7 @@ class GPTResearcher:
             )
         return content
 
-    async def __process_sub_query(self, sub_query: str, scraped_data: list = []):
+    async def __process_sub_query(self, sub_query: str, scraped_data: list = [], include_domains=None):
         """Takes in a sub query and scrapes urls based on it and gathers context.
 
         Args:
@@ -350,7 +356,7 @@ class GPTResearcher:
             )
 
         if not scraped_data:
-            scraped_data = await self.__scrape_data_by_query(sub_query)
+            scraped_data = await self.__scrape_data_by_query(sub_query, include_domains)
 
         content = await self.__get_similar_content_by_query(sub_query, scraped_data)
 
@@ -390,7 +396,7 @@ class GPTResearcher:
 
         return new_urls
 
-    async def __scrape_data_by_query(self, sub_query):
+    async def __scrape_data_by_query(self, sub_query, include_domains=None):
         """
         Runs a sub-query across multiple retrievers and scrapes the resulting URLs.
 
@@ -409,7 +415,7 @@ class GPTResearcher:
 
             # Perform the search using the current retriever
             search_results = await asyncio.to_thread(
-                retriever.search, max_results=self.cfg.max_search_results_per_query
+                retriever.search, max_results=self.cfg.max_search_results_per_query, search_depth="basic", include_domains=include_domains
             )
 
             # Collect new URLs from search results
