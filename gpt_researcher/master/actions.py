@@ -78,7 +78,7 @@ def get_retriever(retriever):
     return retriever
 
 
-def get_retrievers(headers, cfg):
+def get_retrievers(headers, cfg, report_source):
     """
     Determine which retriever(s) to use based on headers, config, or default.
 
@@ -89,6 +89,14 @@ def get_retrievers(headers, cfg):
     Returns:
         list: A list of retriever classes to be used for searching.
     """
+
+    if report_source != ReportSource.Local.value and report_source != ReportSource.Hybrid.value:
+        if "custom" in cfg.retrievers:
+            cfg.retrievers.remove("custom")
+    if report_source != ReportSource.Web.value and report_source != ReportSource.Hybrid.value:
+        if "bing" in cfg.retrievers:
+            cfg.retrievers.remove("bing")
+
     # Check headers first for multiple retrievers
     if headers.get("retrievers"):
         retrievers = headers.get("retrievers").split(",")
