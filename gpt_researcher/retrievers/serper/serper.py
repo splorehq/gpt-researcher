@@ -77,5 +77,5 @@ class SerperSearch():
                 "body": result["snippet"],
             }
             search_results.append(search_result)
-
+        print(f"Serper search_results: {search_results}")
         return search_results

@@ -49,7 +49,7 @@ class TavilySearch():
                 include_domains: Sequence[str] = None,
                 exclude_domains: Sequence[str] = None,
                 include_answer: bool = False,
-                include_raw_content: bool = False,
+                include_raw_content: bool = True,
                 include_images: bool = False,
                 use_cache: bool = True,
                 ) -> dict:
@@ -96,4 +96,26 @@ class TavilySearch():
         except Exception as e:
             print(f"Error: {e}. Failed fetching sources. Resulting in empty response.")
             search_response = []
+        print(f"Tavily search_results: {search_response}")
         return search_response
+    
+    def search(self, max_results=7, search_depth=None, include_domains=None, exclude_domains=None):
+        """
+        Searches the query
+        Returns:
+
+        """
+        try:
+            # Search the query
+            results = self._search(self.query, search_depth=search_depth, max_results=max_results, include_domains=include_domains, exclude_domains=exclude_domains)
+            sources = results.get("results", [])
+            if not sources:
+                raise Exception("No results found with Tavily API search.")
+            # Return the results
+            search_response = [{"href": obj["url"], "body": obj["content"]} for obj in sources]
+        except Exception as e:
+            print(f"Error: {e}. Failed fetching sources. Resulting in empty response.")
+            search_response = []
+        print(f"Tavily search_results: {search_response}")
+        return search_response
+

@@ -14,8 +14,7 @@ class ReportSource(Enum):
     Web = "web"
     Local = "splore"
     LangChainDocuments = "langchain_documents"
-    LangChainVectorStore = "langchain_vectorstore"
-    Static = "static"
+    Sources = "sources"
     Hybrid = "hybrid"
 
 
