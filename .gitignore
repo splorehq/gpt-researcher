@@ -7,6 +7,7 @@
 env/
 venv/
 .venv/
+vevn/
 
 # Other Environments
 ENV/
@@ -15,9 +16,6 @@ venv.bak/
 
 #Ignore generated outputs
 outputs/
-*.lock
-dist/
-gpt_researcher.egg-info/
 
 #Ignore my local docs
 my-docs/
@@ -38,6 +36,3 @@ docs/build
 .langgraph-data/
 .next/
 package-lock.json
-
-#Vim swp files
-*.swp

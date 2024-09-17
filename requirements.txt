@@ -12,7 +12,6 @@ markdown
 langchain>=0.2,<0.3
 langchain_community>=0.2,<0.3
 langchain-openai>=0.1,<0.2
-langgraph
 tiktoken
 gpt-researcher
 arxiv
@@ -28,7 +27,7 @@ websockets
 unstructured
 json_repair
 json5
-loguru
+gunicorn
 
 # uncomment for testing
 # pytest

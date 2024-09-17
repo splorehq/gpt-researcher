@@ -12,7 +12,34 @@ class ArxivSearch:
         self.sort = arxiv.SortCriterion.SubmittedDate if sort == 'SubmittedDate' else arxiv.SortCriterion.Relevance
         
 
-    def search(self, max_results=5):
+    def search(self, max_results=5, search_depth=None, include_domains=None, exclude_domains=None):
+        """
+        Performs the search
+        :param query:
+        :param max_results:
+        :return:
+        """
+
+        arxiv_gen = list(arxiv.Client().results(
+        self.arxiv.Search(
+            query= self.query, #+
+            max_results=max_results,
+            sort_by=self.sort,
+        )))
+
+        search_result = []
+
+        for result in arxiv_gen:
+
+            search_result.append({
+                "title": result.title,
+                "href": result.pdf_url,
+                "body": result.summary,
+            })
+        
+        return search_result
+    
+    def search(self, max_results=7, search_depth=None, include_domains=None, exclude_domains=None):
         """
         Performs the search
         :param query:

@@ -47,6 +47,5 @@ USER gpt-researcher
 COPY --chown=gpt-researcher:gpt-researcher ./ ./
 
 EXPOSE 8000
-
-# We can change this for gunicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["gunicorn"]
+CMD ["main:app", "-c", "conf/gunicorn.conf.py"]

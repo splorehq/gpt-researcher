@@ -423,10 +423,14 @@ async def generate_report(
     report = ""
 
     if report_type == "subtopic_report":
+        system_prompt_by_report_type = get_system_prompt_by_report_type(report_type)
+        agent_role_prompt = f"{agent_role_prompt}. {system_prompt_by_report_type}. Create a structured, rigorous, but succint analyst insights based on the provided topic and subtopics, and conclude with a list of sources. The report should be presented first, followed by the sources. Do not include a final conclusion section."
         content = f"{generate_prompt(query, existing_headers, relevant_written_contents, main_topic, context, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words)}"
     else:
         content = f"{generate_prompt(query, context, report_source, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words)}"
     try:
+        agent_role_prompt = f" {agent_role_prompt} .You must use only the content provided in the context and the main topic. Do not try to generate content on your own or use external sources."
+        print(f"Generating report for the query {query} with content: {content}")
         report = await create_chat_completion(
             model=cfg.smart_llm_model,
             messages=[

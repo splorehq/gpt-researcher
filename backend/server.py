@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import time
@@ -62,6 +63,8 @@ async def read_root(request: Request):
         "index.html", {"request": request, "report": None}
     )
 
+logger = logging.getLogger(__name__)
+
 
 # Add the sanitize_filename function here
 def sanitize_filename(filename):
@@ -73,13 +76,18 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
+            logger.info(f"Received data: {data}")
             if data.startswith("start"):
                 json_data = json.loads(data[6:])
-                task = json_data.get("task")
-                report_type = json_data.get("report_type")
-                source_urls = json_data.get("source_urls")
-                tone = json_data.get("tone")
-                headers = json_data.get("headers", {})
+                task = json_data["value"].get("task")
+                task_id = int(time.time())
+                
+                report_type = "multi_agents"
+                report_style = json_data["value"].get("report_style")
+                source_urls = json_data["value"].get("source_urls")
+                agent_specialization = json_data["value"].get("agent_specialization")
+                tone = json_data["value"].get("tone")
+                headers = json_data["value"].get("headers", {})
                 filename = f"task_{int(time.time())}_{task}"
                 sanitized_filename = sanitize_filename(
                     filename
@@ -87,7 +95,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 report_source = json_data.get("report_source")
                 if task and report_type:
                     report = await manager.start_streaming(
-                        task, report_type, report_source, source_urls, tone, websocket, headers
+                        task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization
                     )
                     # Ensure report is a string
                     if not isinstance(report, str):

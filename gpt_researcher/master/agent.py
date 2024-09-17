@@ -36,7 +36,9 @@ class GPTResearcher:
         visited_urls: set = set(),
         verbose: bool = True,
         context=[],
-        headers: dict = None,  # Add headers parameter
+        headers: dict = None,
+        include_domains = None,
+        search_query_instructions = None
     ):
         """
         Initialize the GPT Researcher class.
@@ -91,6 +93,8 @@ class GPTResearcher:
 
         # Stores all the user provided subtopics
         self.subtopics = subtopics
+        self.include_domains = include_domains
+        self.search_query_instructions = search_query_instructions
 
     async def conduct_research(self):
         """
@@ -121,6 +125,10 @@ class GPTResearcher:
                 headers=self.headers,
             )
 
+        #overrite the search query prompt if it is provided in the config
+        if self.search_query_instructions:
+            self.role = self.search_query_instructions
+
         if self.verbose:
             await stream_output("logs", "agent_generated", self.agent, self.websocket)
 
@@ -129,15 +137,16 @@ class GPTResearcher:
             self.context = await self.__get_context_by_urls(self.source_urls)
 
         elif self.report_source == ReportSource.Local.value:
-            document_data = await DocumentLoader(self.cfg.doc_path).load()
-            self.context = await self.__get_context_by_search(self.query, document_data)
+            # document_data = await DocumentLoader(self.cfg.doc_path).load()
+            self.context = await self.__get_context_by_search_spl(self.query)
 
         # Hybrid search including both local documents and web sources
         elif self.report_source == ReportSource.Hybrid.value:
-            document_data = await DocumentLoader(self.cfg.doc_path).load()
-            docs_context = await self.__get_context_by_search(self.query, document_data)
+            # document_data = await DocumentLoader(self.cfg.doc_path).load()
+            docs_context = await self.__get_context_by_search_spl(self.query)
             web_context = await self.__get_context_by_search(self.query)
-            self.context = f"Context from local documents: {docs_context}\n\nContext from web sources: {web_context}"
+            self.context = f"Context from web sources: {web_context}\n\nContext from local documents: {docs_context}"
+            # self.context = f"Context from local documents: {docs_context}\n\nContext from web sources: {web_context}"
 
         elif self.report_source == ReportSource.LangChainDocuments.value:
             langchain_documents_data = await LangChainDocumentLoader(
@@ -151,7 +160,7 @@ class GPTResearcher:
             self.context = await self.__get_context_by_vectorstore(self.query, self.vector_store_filter)
         # Default web based research
         else:
-            self.context = await self.__get_context_by_search(self.query)
+            self.context = await self.__get_context_by_search(self.query, include_domains=self.include_domains)
 
         time.sleep(2)
         if self.verbose:
@@ -203,6 +212,7 @@ class GPTResearcher:
         if self.report_type == "subtopic_report":
             report_params.update({
                 "main_topic": self.parent_query,
+                "websocket": None,
                 "existing_headers": existing_headers,
                 "relevant_written_contents": relevant_written_contents,
                 "cost_callback": self.add_costs,
@@ -264,7 +274,7 @@ class GPTResearcher:
         )
         return context
 
-    async def __get_context_by_search(self, query, scraped_data: list = []):
+    async def __get_context_by_search(self, query, scraped_data: list = [], include_domains=None):
         """
            Generates the context for the research task by searching the query and scraping the results
         Returns:
@@ -290,7 +300,7 @@ class GPTResearcher:
         # Using asyncio.gather to process the sub_queries asynchronously
         context = await asyncio.gather(
             *[
-                self.__process_sub_query(sub_query, scraped_data)
+                self.__process_sub_query(sub_query, scraped_data, include_domains)
                 for sub_query in sub_queries
             ]
         )
@@ -327,8 +337,49 @@ class GPTResearcher:
                 self.websocket,
             )
         return content
+    
+    async def __get_context_by_search_spl(self, query, scraped_data: list = []):
+        """
+           Generates the context for the research task by searching the query and scraping the results
+        Returns:
+            context: List of context
+        """
+        context = []
+        # Generate Sub-Queries including original query
+        sub_queries = await get_sub_queries(
+            query=query,
+            agent_role_prompt=self.role,
+            cfg=self.cfg,
+            parent_query=self.parent_query,
+            report_type=self.report_type,
+            cost_callback=self.add_costs,
+            openai_api_key=self.headers.get("openai_api_key"),
+        )
 
-    async def __process_sub_query(self, sub_query: str, scraped_data: list = []):
+        # If this is not part of a sub researcher, add original query to research for better results
+        if self.report_type != "subtopic_report":
+            sub_queries.append(query)
+
+        if self.verbose:
+            await stream_output(
+                "logs",
+                "subqueries",
+                f"🗂️ I will conduct my research based on the following queries: {sub_queries}...",
+                self.websocket,
+                True,
+                sub_queries,
+            )
+
+        # Using asyncio.gather to process the sub_queries asynchronously
+        context = await asyncio.gather(
+            *[
+                self.__process_sub_query_spl(sub_query, scraped_data)
+                for sub_query in sub_queries
+            ]
+        )
+        return context
+
+    async def __process_sub_query(self, sub_query: str, scraped_data: list = [], include_domains=None):
         """Takes in a sub query and scrapes urls based on it and gathers context.
 
         Args:
@@ -347,7 +398,43 @@ class GPTResearcher:
             )
 
         if not scraped_data:
-            scraped_data = await self.__scrape_data_by_query(sub_query)
+            scraped_data = await self.__scrape_data_by_query(sub_query, include_domains)
+
+        content = await self.__get_similar_content_by_query(sub_query, scraped_data)
+
+        if content and self.verbose:
+            await stream_output(
+                "logs", "subquery_context_window", f"📃 {content}", self.websocket
+            )
+        elif self.verbose:
+            await stream_output(
+                "logs",
+                "subquery_context_not_found",
+                f"🤷 No content found for '{sub_query}'...",
+                self.websocket,
+            )
+        return content
+    
+    async def __process_sub_query_spl(self, sub_query: str, scraped_data: list = []):
+        """Takes in a sub query and scrapes urls based on it and gathers context.
+
+        Args:
+            sub_query (str): The sub-query generated from the original query
+            scraped_data (list): Scraped data passed in
+
+        Returns:
+            str: The context gathered from search
+        """
+        if self.verbose:
+            await stream_output(
+                "logs",
+                "running_subquery_research",
+                f"\n🔍 Running research for '{sub_query}'...",
+                self.websocket,
+            )
+
+        if not scraped_data:
+            scraped_data = await self.__scrape_data_by_query_spl(sub_query)
 
         content = await self.__get_similar_content_by_query(sub_query, scraped_data)
 
@@ -387,7 +474,7 @@ class GPTResearcher:
 
         return new_urls
 
-    async def __scrape_data_by_query(self, sub_query):
+    async def __scrape_data_by_query(self, sub_query, include_domains=None):
         """
         Runs a sub-query across multiple retrievers and scrapes the resulting URLs.
 
@@ -406,7 +493,7 @@ class GPTResearcher:
 
             # Perform the search using the current retriever
             search_results = await asyncio.to_thread(
-                retriever.search, max_results=self.cfg.max_search_results_per_query
+                retriever.search, max_results=self.cfg.max_search_results_per_query, search_depth="basic", include_domains=include_domains
             )
 
             # Collect new URLs from search results

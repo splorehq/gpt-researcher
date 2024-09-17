@@ -24,6 +24,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 from scraping.processing.text import summarize_text
 
+from backend.websocket_manager import manager as websocket_manager
+
 executor = ThreadPoolExecutor()
 
 FILE_DIR = Path(__file__).parent.parent
@@ -55,7 +57,7 @@ async def async_browse(
 
     print(f"Scraping url {url} with question {question}")
     if websocket:
-        await websocket.send_json(
+        await websocket_manager.get_active_websocket(websocket).send_json(
             {
                 "type": "logs",
                 "output": f"🔎 Browsing the {url} for relevant about: {question}...",
@@ -73,7 +75,7 @@ async def async_browse(
             executor, summarize_text, fast_llm_model, summary_token_limit, llm_provider, url, text, question, driver
         )
         if websocket:
-            await websocket.send_json(
+            await websocket_manager.get_active_websocket(websocket).send_json(
                 {
                     "type": "logs",
                     "output": f"📝 Information gathered from url {url}: {summary_text}",
