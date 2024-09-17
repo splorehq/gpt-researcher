@@ -1,8 +1,7 @@
-import json
 from typing import Any, Dict, List, Optional
 import requests
 import os
-
+import json
 
 class CustomRetriever:
     """
@@ -27,6 +26,30 @@ class CustomRetriever:
             if key.startswith('RETRIEVER_ARG_')
         }
 
+    # def search(self, max_results: int = 5) -> Optional[List[Dict[str, Any]]]:
+    #     """
+    #     Performs the search using the custom retriever endpoint.
+
+    #     :param max_results: Maximum number of results to return (not currently used)
+    #     :return: JSON response in the format:
+    #         [
+    #           {
+    #             "url": "http://example.com/page1",
+    #             "raw_content": "Content of page 1"
+    #           },
+    #           {
+    #             "url": "http://example.com/page2",
+    #             "raw_content": "Content of page 2"
+    #           }
+    #         ]
+    #     """
+    #     try:
+    #         response = requests.get(self.endpoint, params={**self.params, 'query': self.query})
+    #         response.raise_for_status()
+    #         return response.json()
+    #     except requests.RequestException as e:
+    #         print(f"Failed to retrieve search results: {e}")
+    #         return None
     def make_post_request(self, url, data):
         try:
             headers = {'Content-Type': 'application/json'}
@@ -36,7 +59,7 @@ class CustomRetriever:
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return None
-
+    
     def search(self, max_results: int = 5) -> Optional[List[Dict[str, Any]]]:
         """
         Performs the search using the custom retriever endpoint.
@@ -96,8 +119,8 @@ class CustomRetriever:
             ]
         """
         try:
-            base_id = "STEN2imEGLyHBfz7hgYv28CQ1LjNaC9"
-            agent_id = "ABSC2imFB6aPuRSRnQtDp1qXmcI6eat"
+            base_id = "STEN2lGcs1cZYGtI1Fgr9Mc6D692jiX"
+            agent_id = "ABSC2lGm7ILu1bV8yLFPGfsrPtaFuYv"
             SPLORE_URL = "https://api.splore.ai/api/v1/retrieve"
 
             data = {

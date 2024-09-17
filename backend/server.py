@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import time
@@ -11,14 +12,12 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from backend.utils import write_md_to_pdf, write_md_to_word, write_text_to_md
-from backend.websocket_manager import manager as websocket_manager
+from backend.websocket_manager import WebSocketManager
 
 import shutil
 from multi_agents.main import run_research_task
 from gpt_researcher.document.document import DocumentLoader
 from gpt_researcher.master.actions import stream_output
-from gpt_researcher.utils.enum import Tone
-from backend.run_agent import run_agent
 
 
 class ResearchRequest(BaseModel):
@@ -48,6 +47,8 @@ app.mount("/static", StaticFiles(directory="./frontend/static"), name="static")
 
 templates = Jinja2Templates(directory="./frontend")
 
+manager = WebSocketManager()
+
 # Dynamic directory for outputs once first research is run
 @app.on_event("startup")
 def startup_event():
@@ -62,48 +63,38 @@ async def read_root(request: Request):
         "index.html", {"request": request, "report": None}
     )
 
+logger = logging.getLogger(__name__)
+
 
 # Add the sanitize_filename function here
 def sanitize_filename(filename):
     return re.sub(r"[^\w\s-]", "", filename).strip()
 
-async def start_streaming(task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers=None, agent_specialization=None):
-        """Start streaming the output."""
-        tone = Tone[tone]
-        report = await run_agent(task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers,agent_specialization)
-        return report
-
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await websocket_manager.connect(websocket)
+    await manager.connect(websocket)
     try:
         while True:
             data = await websocket.receive_text()
-            print(f"Received data: {data}")
-            if data.startswith("task_id"):
-                task_id = json.loads(data[8:])
-                print(f"Received task_id: {task_id}")
-                await websocket_manager.map_task_socket(task_id, websocket)
-
-            elif data.startswith("start"):
+            logger.info(f"Received data: {data}")
+            if data.startswith("start"):
                 json_data = json.loads(data[6:])
                 task = json_data["value"].get("task")
                 task_id = int(time.time())
-
-                await websocket_manager.map_task_socket(task_id, websocket)
-                report_type = "multi_agents"#json_data.get("report_type")
+                
+                report_type = "multi_agents"
                 report_style = json_data["value"].get("report_style")
                 source_urls = json_data["value"].get("source_urls")
-                agent_specialization = 'investment'#json_data["value"].get("agent_specialization")
+                agent_specialization = json_data["value"].get("agent_specialization")
                 tone = json_data["value"].get("tone")
                 headers = json_data["value"].get("headers", {})
                 filename = f"task_{int(time.time())}_{task}"
                 sanitized_filename = sanitize_filename(
                     filename
                 )  # Sanitize the filename
-                report_source = json_data["value"].get("report_source")
+                report_source = json_data.get("report_source")
                 if task and report_type:
-                    report = await start_streaming(
+                    report = await manager.start_streaming(
                         task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization
                     )
                     # Ensure report is a string
@@ -116,8 +107,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     docx_path = await write_md_to_word(report, sanitized_filename)
                     # Returning the path of saved report files
                     md_path = await write_text_to_md(report, sanitized_filename)
-
-                    await (websocket_manager.get_active_websocket(websocket)).send_json(
+                    await websocket.send_json(
                         {
                             "type": "path",
                             "output": {
@@ -137,11 +127,11 @@ async def websocket_endpoint(websocket: WebSocket):
                 else:
                     print("Error: not enough parameters provided.")
     except WebSocketDisconnect:
-        await websocket_manager.disconnect(websocket)
+        await manager.disconnect(websocket)
 
 @app.post("/api/multi_agents")
 async def run_multi_agents():
-    websocket = websocket_manager.active_connections[0] if websocket_manager.active_connections else None
+    websocket = manager.active_connections[0] if manager.active_connections else None
     if websocket:
         report = await run_research_task("Is AI in a hype cycle?", websocket, stream_output)
         return {"report": report}
@@ -172,7 +162,8 @@ async def get_config(
         "SEARX_URL": searx_url if searx_url else os.getenv("SEARX_URL", ""),
         "LANGCHAIN_TRACING_V2": os.getenv("LANGCHAIN_TRACING_V2", "true"),
         "DOC_PATH": os.getenv("DOC_PATH", ""),
-        "RETRIEVER": os.getenv("RETRIEVER", "")
+        "RETRIEVER": os.getenv("RETRIEVER", ""),
+        "EMBEDDING_MODEL": os.getenv("OPENAI_EMBEDDING_MODEL", "")
     }
     return config
 

@@ -1,7 +1,13 @@
 import asyncio
+import datetime
 from typing import Dict, List
 
 from fastapi import WebSocket
+
+from backend.report_type import BasicReport, DetailedReport
+from gpt_researcher.utils.enum import ReportType, Tone
+from multi_agents.main import run_research_task
+from gpt_researcher.master.actions import stream_output  # Import stream_output
 
 class WebSocketManager:
     """Manage websockets"""
@@ -11,8 +17,6 @@ class WebSocketManager:
         self.active_connections: List[WebSocket] = []
         self.sender_tasks: Dict[WebSocket, asyncio.Task] = {}
         self.message_queues: Dict[WebSocket, asyncio.Queue] = {}
-        self.active_task_connections: Dict[int, WebSocket] = {}  # Map task_id to initial websocket
-        self.active_websocket_connections: Dict[WebSocket, WebSocket] = {}  # Map initial websocket to active websocket
 
     async def start_sender(self, websocket: WebSocket):
         """Start the sender task."""
@@ -25,9 +29,9 @@ class WebSocketManager:
             if websocket in self.active_connections:
                 try:
                     if message == "ping":
-                        await (self.get_active_websocket(websocket)).send_text("pong")
+                        await websocket.send_text("pong")
                     else:
-                        await (self.get_active_websocket(websocket)).send_text(message)
+                        await websocket.send_text(message)
                 except:
                     break
             else:
@@ -39,29 +43,6 @@ class WebSocketManager:
         self.active_connections.append(websocket)
         self.message_queues[websocket] = asyncio.Queue()
         self.sender_tasks[websocket] = asyncio.create_task(self.start_sender(websocket))
-    
-    async def map_task_socket(self, task_id: int, new_websocket: WebSocket):
-        """Connect a websocket."""
-        if task_id in self.active_task_connections:
-            old_websocket = self.active_task_connections[task_id]
-            self.active_websocket_connections[old_websocket] = new_websocket
-            if old_websocket != new_websocket:
-                queue = self.message_queues.get(old_websocket)
-                if queue:
-                    while not queue.empty():
-                        message = await queue.get()
-                        await self.message_queues[new_websocket].put(message)
-        else:
-            self.active_websocket_connections[new_websocket] = new_websocket
-
-        self.active_task_connections[task_id] = new_websocket
-
-    async def disconnect_task_socket(self,task_id: int):
-        #To:Do Kill task
-        if task_id in self.active_task_connections:
-            old_websocket = self.active_task_connections[task_id]
-            await self.disconnect(old_websocket)
-            self.active_task_connections.pop(task_id)
 
     async def disconnect(self, websocket: WebSocket):
         """Disconnect a websocket."""
@@ -71,12 +52,55 @@ class WebSocketManager:
             await self.message_queues[websocket].put(None)
             del self.sender_tasks[websocket]
             del self.message_queues[websocket]
-        else:
-            print('no websocket found')
-
-    def get_active_websocket(self, websocket: WebSocket):
-        return self.active_websocket_connections.get(websocket)
-
-manager = WebSocketManager()
 
 
+    async def start_streaming(self, task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers=None, agent_specialization=None):
+        """Start streaming the output."""
+        tone = Tone[tone]
+        report = await run_agent(task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization)
+        return report
+
+
+async def run_agent(task, task_id, report_type, report_style, report_source, source_urls, tone: Tone, websocket, headers=None, agent_specialization=None):
+    """Run the agent."""
+    # measure time
+    start_time = datetime.datetime.now()
+    # add customized JSON config file path here
+    config_path = ""
+    # Instead of running the agent directly run it through the different report type classes
+    if report_type == "multi_agents":
+        report = await run_research_task(query=task, task_id=task_id, websocket=websocket, stream_output=stream_output, tone=tone, headers=headers, report_style=report_style, source=report_source, source_urls=source_urls, agent_specialization=agent_specialization)
+        #report = await run_research_task(query=task, websocket=websocket, stream_output=stream_output, tone=tone, headers=headers)
+        report = report.get("report", "")
+    elif report_type == ReportType.DetailedReport.value:
+        researcher = DetailedReport(
+            query=task,
+            report_type=report_type,
+            report_source=report_source,
+            source_urls=source_urls,
+            tone=tone,
+            config_path=config_path,
+            websocket=websocket,
+            headers=headers
+        )
+        report = await researcher.run()
+    else:
+        researcher = BasicReport(
+            query=task,
+            report_type=report_type,
+            report_source=report_source,
+            source_urls=source_urls,
+            tone=tone,
+            config_path=config_path,
+            websocket=websocket,
+            headers=headers
+        )
+        report = await researcher.run()
+
+    # measure time
+    end_time = datetime.datetime.now()
+    await websocket.send_json(
+        {"type": "logs", "output": f"\nTotal run time: {end_time - start_time}\n"}
+    )
+
+    return report

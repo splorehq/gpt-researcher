@@ -11,7 +11,6 @@ sample_json_default = """
   "sources": A list with strings of all used source links in the entire research data in markdown syntax and apa citation format. For example: ['-  Title, year, Author [source url](source)', ...]
 }
 """
-
 sample_json_brief = """
 {
   "overview": A brief overview of the research highlights and key takeaways in markdown syntax and hyperlink references to relevant sources,
@@ -113,6 +112,7 @@ class WriterAgent:
                        f"For example: 'This is a sample text. ([url website](url))'\n\n"
                        f"{f'You must follow the guidelines provided: {guidelines}' if follow_guidelines else ''}\n"
                        f"You MUST return nothing but a JSON in the following format (without json markdown):\n"
+                       f"Make sure that the 'table_of_contents' holds all the topics and sub-topics mentioned in the 'Research data' in markdown format."
                        f"{sample_json}\n\n"
                        f"References shall be mentioned properly with proper name for that URL, do not say 'source', 'source url' etc., instead give a proper name.\n"
                        f"Do not include the key name in the value again, for example, if key is 'Introduction', do not add '# Introduction' again in the generated content. Same with the 'Conclusion'\n"
@@ -120,8 +120,8 @@ class WriterAgent:
 
         }]
 
-        response = await call_model(prompt, task.get("model"), max_retries=2, response_format='json', api_key=self.headers.get("openai_api_key"))
-        return json.loads(response)
+        response = await call_model(prompt, task.get("model"), response_format='json')
+        return response#json.loads(response)
 
     async def revise_headers(self, task: dict, headers: dict):
         prompt = [{
@@ -139,51 +139,59 @@ Headers Data: {headers}\n
 
         }]
 
-        response = await call_model(prompt, task.get("model"), response_format='json', api_key=self.headers.get("openai_api_key"))
-        return {"headers": json.loads(response)}
+        response = await call_model(
+            prompt,
+            task.get("model"),
+            response_format="json",
+        )
+        return {"headers": response}
 
     async def run(self, research_state: dict):
         if self.websocket and self.stream_output:
-            await self.stream_output("status", "publishing", f"Writing Report…", self.websocket)
-            await self.stream_output("logs", "writing_report", f"Writing final research report based on research data...", self.websocket)
+            await self.stream_output(
+                "logs",
+                "writing_report",
+                f"Writing final research report based on research data...",
+                self.websocket,
+            )
         else:
-            print_agent_output(f"Writing final research report based on research data...", agent="WRITER")
+            print_agent_output(
+                f"Writing final research report based on research data...",
+                agent="WRITER",
+            )
 
         research_layout_content = await self.write_sections(research_state)
 
         if research_state.get("task").get("verbose"):
             if self.websocket and self.stream_output:
-                research_layout_content_str = json.dumps(research_layout_content, indent=2)
-                await self.stream_output("logs", "research_layout_content", research_layout_content_str, self.websocket)
+                research_layout_content_str = json.dumps(
+                    research_layout_content, indent=2
+                )
+                await self.stream_output(
+                    "logs",
+                    "research_layout_content",
+                    research_layout_content_str,
+                    self.websocket,
+                )
             else:
                 print_agent_output(research_layout_content, agent="WRITER")
 
         headers = self.get_headers(research_state)
         if research_state.get("task").get("follow_guidelines"):
             if self.websocket and self.stream_output:
-                await self.stream_output("logs", "rewriting_layout", "Rewriting layout based on guidelines...", self.websocket)
+                await self.stream_output(
+                    "logs",
+                    "rewriting_layout",
+                    "Rewriting layout based on guidelines...",
+                    self.websocket,
+                )
             else:
-                print_agent_output("Rewriting layout based on guidelines...", agent="WRITER")
-            headers = await self.revise_headers(task=research_state.get("task"), headers=headers)
+                print_agent_output(
+                    "Rewriting layout based on guidelines...", agent="WRITER"
+                )
+            headers = await self.revise_headers(
+                task=research_state.get("task"), headers=headers
+            )
             headers = headers.get("headers")
 
         return {**research_layout_content, "headers": headers}
-    
-# """
-# **Guidelines for Analyst Insights Creation:**
-# 0. **Succint but rigorous**: Avoid unncessary introductions/conclusions, FOCUS on the TOPIC at hand. YOUR READER IS A BUSY PERSON
-# 1. **Structure and Clarity:** Utilize headers for each subtopic and employ lists and text formatting (such as bold and italics) to enhance readability.
-# 2. **Content Development:** Use the provided subtopics as headings for your report sections. Each section should thoroughly address the relevant content extracted from the documents.
-# 3. **Detail and Accuracy:** When referencing figures or dates, ensure accuracy by specifying units, currency, and the relevant fiscal or calendar year.
-# 4. **Analytical Depth:** Provide detailed explanations of any calculations or analytical processes you undertake.
-# 5. **Presentation:** Organize information using bullet points where applicable to improve clarity and conciseness.
-# 6. **Source Citation:** List all sources in each section, through use of citation numbers [1], [2], [4]. At end of output, also format each numbered source entry with the source name and page number, and include a hyperlink to the document. Example format: [1] [Source Name](link#page=number)...
-# 7. **Bias Consideration:** If a source is marked with a bias (especially from company documents), critically evaluate its claims. Indicate potential bias by prefacing information with phrases like "According to [Source]" or "The company claims."
-# 8. **Citation Style:** Adhere strictly to the provided citation style for consistency and clarity.
-# 9. **Use of Tables:** In sections with dense information or clear data trends, incorporate tables with citations to simplify complex data whereever possible.
-# 10. **Language Consistency:** Always present your report in English. For non-English source material, include original terms in brackets next to their English translations, particularly for specialized jargon or unique phrases.
-# 11. **High Quality and Insightful Suggestions**: Come up with detailed areas of further dilligence, which are very precise and can be done with deep/dives, more access to datasets. Propose datasets to request
-# 12. **Careful & Nuanced Use of Web Search Results**: When web search results are provided, use them in a nuanced fashion, e.g: "Based on web results......, more research/cross checking could be done"
-# 13. **Markdown Output**: Markdown TABLES ONLY, ABSOLUTELY HTML
-# 14. **CLEAR CITATIONS**: ALL CITATIONS MUST INCLUDE URL WHENEVER POSSIBLE
-# 15. **HEIRARCHICAL INFORMATION REPRESENTATION**: Enumerate all the topics and subtopics in the table of contents, and represent the information in a hierarchical manner to match the same numbering."""
