@@ -92,7 +92,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 sanitized_filename = sanitize_filename(
                     filename
                 )  # Sanitize the filename
-                report_source = json_data.get("report_source")
+                report_source = json_data["value"].get("report_source")
                 if task and report_type:
                     report = await manager.start_streaming(
                         task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization

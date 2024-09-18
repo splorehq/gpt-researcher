@@ -118,6 +118,7 @@ class CustomRetriever:
               }
             ]
         """
+        max_results = 5
         try:
             base_id = "STEN2lGcs1cZYGtI1Fgr9Mc6D692jiX"
             agent_id = "ABSC2lGm7ILu1bV8yLFPGfsrPtaFuYv"
@@ -130,7 +131,15 @@ class CustomRetriever:
             }
             
             response = self.make_post_request(SPLORE_URL, data)
-            response = response["docs"][:5]
+
+            print("**************** SPLORE Response **********", response)
+
+            if response and "docs" in response and isinstance(response["docs"], list) and len(response["docs"]) > 0:
+                response = response["docs"][:max_results]
+            else:
+                print("No documents found in the response.")
+                return None
+            
             final_results = []
             for doc in response:
                 result = {"url": doc["metadata"]["external_link"], "raw_content": doc["snippet"]}
