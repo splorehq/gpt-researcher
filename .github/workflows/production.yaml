@@ -1,4 +1,4 @@
-name: Deploy GOT to EKS Stage using Helm
+name: Deploy GPT to EKS Stage using Helm
 
 on:
   push:
@@ -57,4 +57,4 @@ jobs:
         ECR_REGISTRY_STAGING: ${{ steps.login-ecr.outputs.registry }}
       run: |
         cd infra
-        helm upgrade research-gpt -n rgpt . -f values-prod.yaml  --install ----recreate-pods
+        helm upgrade research-gpt -n rgpt . -f values-prod.yaml  --install --recreate-pods
