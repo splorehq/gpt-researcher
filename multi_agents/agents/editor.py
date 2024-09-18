@@ -26,33 +26,29 @@ class EditorAgent:
 
         initial_research = research_state.get("initial_research")
         task = research_state.get("task")
+        max_sections = task.get("max_sections")
         include_human_feedback = task.get("include_human_feedback")
         human_feedback = research_state.get("human_feedback")
-        max_sections = task.get("max_sections")
+        system_instructions = task["system_instructions"]
 
-        prompt = [
-            {
-                "role": "system",
-                "content": "You are a research editor. Your goal is to oversee the research project"
-                " from inception to completion. Your main task is to plan the article section "
-                "layout based on an initial research summary.\n ",
-            },
-            {
-                "role": "user",
-                "content": f"""Today's date is {datetime.now().strftime('%d/%m/%Y')}
-                                  Research summary report: '{initial_research}'
-                                  {f'Human feedback: {human_feedback}. You must plan the sections based on the human feedback.'
-            if include_human_feedback and human_feedback and human_feedback != 'no' else ''}
-                                  \nYour task is to generate an outline of sections headers for the research project
-                                  based on the research summary report above.
-                                  You must generate a maximum of {max_sections} section headers.
-                                  You must focus ONLY on related research topics for subheaders and do NOT include introduction, conclusion and references.
-                                  You must return nothing but a JSON with the fields 'title' (str) and 
-                                  'sections' (maximum {max_sections} section headers) with the following structure:
-                                  '{{title: string research title, date: today's date, 
-                                  sections: ['section header 1', 'section header 2', 'section header 3' ...]}}.""",
-            },
-        ]
+        prompt = [{
+            "role": "system",
+            "content": f"You are a research editor. Your goal is to oversee the research project from inception to completion. {system_instructions}"
+        }, {
+            "role": "user",
+            "content": f"Today's date is {datetime.now().strftime('%d/%m/%Y')}\n."
+                       f"Research summary report: '{initial_research}'\n"
+                       f"{f'Human feedback: {human_feedback}. You must plan the sections based on the human feedback.' if include_human_feedback else ''}\n"
+                       f"Your task is to generate an outline of sections headers for the research project"
+                       f" based on the research summary report above.\n"
+                       f"You must generate a maximum of {max_sections} section headers.\n"
+                       f"Make sure that the sections are diversified considering multiple horizons like 'Idustrial', 'Investments', 'Science' and 'Technology' are covered if necessary.\n"
+                       f"You must focus ONLY on related research topics for subheaders and do NOT include introduction, conclusion and references.\n"
+                       f"You must return nothing but a JSON with the fields 'title' (str) and "
+                       f"'sections' (maximum {max_sections} section headers) with the following structure: "
+                       f"'{{title: string research title, date: today's date, "
+                       f"sections: ['section header 1', 'section header 2', 'section header 3' ...]}}.\n "
+        }]
 
         print_agent_output(
             f"Planning an outline layout based on initial research...", agent="EDITOR"
@@ -70,27 +66,36 @@ class EditorAgent:
         }
 
     async def run_parallel_research(self, research_state: dict):
+        task = research_state.get("task")
+        report_style = task.get("report_style")
+        
         research_agent = ResearchAgent(self.websocket, self.stream_output, self.headers)
-        reviewer_agent = ReviewerAgent(self.websocket, self.stream_output, self.headers)
-        reviser_agent = ReviserAgent(self.websocket, self.stream_output, self.headers)
         queries = research_state.get("sections")
         title = research_state.get("title")
+        
         human_feedback = research_state.get("human_feedback")
         workflow = StateGraph(DraftState)
 
         workflow.add_node("researcher", research_agent.run_depth_research)
-        workflow.add_node("reviewer", reviewer_agent.run)
-        workflow.add_node("reviser", reviser_agent.run)
-
-        # set up edges researcher->reviewer->reviser->reviewer...
         workflow.set_entry_point("researcher")
-        workflow.add_edge("researcher", "reviewer")
-        workflow.add_edge("reviser", "reviewer")
-        workflow.add_conditional_edges(
-            "reviewer",
-            (lambda draft: "accept" if draft["review"] is None else "revise"),
-            {"accept": END, "revise": "reviser"},
-        )
+
+        if report_style != "summary":
+            reviewer_agent = ReviewerAgent(self.websocket, self.stream_output, self.headers)
+            reviser_agent = ReviserAgent(self.websocket, self.stream_output, self.headers)
+            workflow.add_node("reviewer", reviewer_agent.run)
+            workflow.add_node("reviser", reviser_agent.run)
+
+            # set up edges researcher->reviewer->reviser->reviewer...
+        
+            workflow.add_edge('researcher', 'reviewer')
+            workflow.add_edge('reviewer', 'reviser')
+            workflow.add_edge('reviser', END)
+
+            # workflow.add_conditional_edges(
+            #     "reviewer",
+            #     (lambda draft: "accept" if draft["review"] is None else "revise"),
+            #     {"accept": END, "revise": "reviser"},
+            # )
 
         chain = workflow.compile()
 

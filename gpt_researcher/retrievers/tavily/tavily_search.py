@@ -79,7 +79,7 @@ class TavilySearch():
         else:
             response.raise_for_status()  # Raises a HTTPError if the HTTP request returned an unsuccessful status code
 
-    def search(self, max_results=7):
+    def search(self, max_results=7, search_depth=None, include_domains=None, exclude_domains=None):
         """
         Searches the query
         Returns:
@@ -87,7 +87,7 @@ class TavilySearch():
         """
         try:
             # Search the query
-            results = self._search(self.query, search_depth="basic", max_results=max_results, topic=self.topic)
+            results = self._search(self.query, search_depth=search_depth, max_results=max_results, topic=self.topic, include_domains=include_domains, exclude_domains=exclude_domains)
             sources = results.get("results", [])
             if not sources:
                 raise Exception("No results found with Tavily API search.")

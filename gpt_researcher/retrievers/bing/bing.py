@@ -31,7 +31,7 @@ class BingSearch():
             raise Exception("Bing API key not found. Please set the BING_API_KEY environment variable.")
         return api_key
 
-    def search(self, max_results=7):
+    def search(self, max_results=7, search_depth=None, include_domains=None, exclude_domains=None):
         """
         Searches the query
         Returns:
@@ -48,6 +48,11 @@ class BingSearch():
         'Ocp-Apim-Subscription-Key': self.api_key,
         'Content-Type': 'application/json'
         }
+        
+        if include_domains and len(include_domains) > 0:
+            site_vale = " OR ".join(include_domains)
+            self.query = f"{self.query} site:({site_vale})"
+
         params = {
             "responseFilter" : "Webpages",
             "q": self.query,
@@ -59,6 +64,7 @@ class BingSearch():
         }
         
         resp = requests.get(url, headers=headers, params=params)
+        print("**************** BING Response **********", resp)
 
         # Preprocess the results
         if resp is None:

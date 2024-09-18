@@ -78,7 +78,7 @@ def get_retriever(retriever):
     return retriever
 
 
-def get_retrievers(headers, cfg):
+def get_retrievers(headers, cfg, report_source):
     """
     Determine which retriever(s) to use based on headers, config, or default.
 
@@ -89,6 +89,7 @@ def get_retrievers(headers, cfg):
     Returns:
         list: A list of retriever classes to be used for searching.
     """
+
     # Check headers first for multiple retrievers
     if headers.get("retrievers"):
         retrievers = headers.get("retrievers").split(",")
@@ -105,15 +106,41 @@ def get_retrievers(headers, cfg):
     else:
         retrievers = [get_default_retriever().__name__]
 
+    relevant_retrievers = []
+    if report_source != ReportSource.Hybrid.value:
+        if report_source == ReportSource.Local.value:
+            if "custom" in retrievers:
+                relevant_retrievers.append("custom")
+        elif report_source == ReportSource.Web.value:
+            if "bing" in retrievers:
+                relevant_retrievers.append("bing")
+            elif "tavily" in retrievers:
+                relevant_retrievers.append("tavily")
+            elif "serpapi" in retrievers:
+                relevant_retrievers.append("serpapi")
+            elif "serpapi" in retrievers:
+                relevant_retrievers.append("serpapi")
+            elif "arxiv" in retrievers:
+                relevant_retrievers.append("arxiv")
+            elif "google" in retrievers:
+                relevant_retrievers.append("google")
+            elif "serper" in retrievers:
+                relevant_retrievers.append("serper")
+            elif "duckduckgo" in retrievers:
+                relevant_retrievers.append("duckduckgo")
+            #TO_DO: Add more retrievers as applicable to the case in question
+    else:
+        relevant_retrievers = retrievers
+
     # Convert retriever names to actual retriever classes
     # Use get_default_retriever() as a fallback for any invalid retriever names
-    return [get_retriever(r) or get_default_retriever() for r in retrievers]
+    return [get_retriever(r) or get_default_retriever() for r in relevant_retrievers]
 
 
-def get_default_retriever(retriever):
-    from gpt_researcher.retrievers import TavilySearch
+def get_default_retriever():
+    from gpt_researcher.retrievers import CustomRetriever
 
-    return TavilySearch
+    return CustomRetriever
 
 
 async def choose_agent(
@@ -423,10 +450,14 @@ async def generate_report(
     report = ""
 
     if report_type == "subtopic_report":
+        system_prompt_by_report_type = get_system_prompt_by_report_type(report_type)
+        agent_role_prompt = f"{agent_role_prompt}. {system_prompt_by_report_type}. Create a structured, rigorous, but succint analyst insights based on the provided topic and subtopics, and conclude with a list of sources. The report should be presented first, followed by the sources. Do not include a final conclusion section."
         content = f"{generate_prompt(query, existing_headers, relevant_written_contents, main_topic, context, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words)}"
     else:
         content = f"{generate_prompt(query, context, report_source, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words)}"
     try:
+        agent_role_prompt = f" {agent_role_prompt} .You must use only the content provided in the context and the main topic. Do not try to generate content on your own or use external sources."
+        print(f"Generating report for the query {query} with content: {content}")
         report = await create_chat_completion(
             model=cfg.smart_llm_model,
             messages=[
