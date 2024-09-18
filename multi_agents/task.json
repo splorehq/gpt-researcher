@@ -13,6 +13,8 @@
     "Give equal importance to Local Documents and Web Documents while creating the report.\n",
     "Each sub section MUST include supporting sources using hyperlinks. If none exist, erase the sub section or rewrite it to be a part of the previous section\n",
     "Give response in Markdown format to make it look beautiful.\n",
+    "Ensure the citations are valid links that is provided to you explicitely in the context. This is not something that you fabricate to look like legit links.\n",
+    "Tag the citations only when there is sources from where the claims are taken from. Do not make up fictious links when claims are unverified. It is better to skip such unverfiable claims.\n",
     "Make sure that the citations are always external, not the document itself. For example the link should not be '#', which means that the document is citing to itself.\n",
     "The links in the citations should not be dummy, for say, 'example.com', 'sample.com' etc.,"
   ],
