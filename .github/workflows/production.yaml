@@ -56,5 +56,5 @@ jobs:
       env:
         ECR_REGISTRY_STAGING: ${{ steps.login-ecr.outputs.registry }}
       run: |
-        cd infra
+        cd infra/research-gpt
         helm upgrade research-gpt -n rgpt . -f values-prod.yaml  --install --recreate-pods
