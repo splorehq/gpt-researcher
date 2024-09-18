@@ -56,6 +56,21 @@ spec:
                 secretKeyRef:
                   name: gpt-secret
                   key: BING_API_KEY
+            - name: AZURE_API_BASE
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: AZURE_API_BASE
+            - name: AZURE_API_VERSION
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: AZURE_API_VERSION
+            - name: AZURE_API_KEY
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: AZURE_API_KEY
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.volumeMounts }}
