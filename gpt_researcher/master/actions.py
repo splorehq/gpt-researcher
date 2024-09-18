@@ -90,13 +90,6 @@ def get_retrievers(headers, cfg, report_source):
         list: A list of retriever classes to be used for searching.
     """
 
-    if report_source != ReportSource.Local.value and report_source != ReportSource.Hybrid.value:
-        if "custom" in cfg.retrievers:
-            cfg.retrievers.remove("custom")
-    if report_source != ReportSource.Web.value and report_source != ReportSource.Hybrid.value:
-        if "bing" in cfg.retrievers:
-            cfg.retrievers.remove("bing")
-
     # Check headers first for multiple retrievers
     if headers.get("retrievers"):
         retrievers = headers.get("retrievers").split(",")
@@ -113,15 +106,41 @@ def get_retrievers(headers, cfg, report_source):
     else:
         retrievers = [get_default_retriever().__name__]
 
+    relevant_retrievers = []
+    if report_source != ReportSource.Hybrid.value:
+        if report_source == ReportSource.Local.value:
+            if "custom" in retrievers:
+                relevant_retrievers.append("custom")
+        elif report_source == ReportSource.Web.value:
+            if "bing" in retrievers:
+                relevant_retrievers.append("bing")
+            elif "tavily" in retrievers:
+                relevant_retrievers.append("tavily")
+            elif "serpapi" in retrievers:
+                relevant_retrievers.append("serpapi")
+            elif "serpapi" in retrievers:
+                relevant_retrievers.append("serpapi")
+            elif "arxiv" in retrievers:
+                relevant_retrievers.append("arxiv")
+            elif "google" in retrievers:
+                relevant_retrievers.append("google")
+            elif "serper" in retrievers:
+                relevant_retrievers.append("serper")
+            elif "duckduckgo" in retrievers:
+                relevant_retrievers.append("duckduckgo")
+            #TO_DO: Add more retrievers as applicable to the case in question
+    else:
+        relevant_retrievers = retrievers
+
     # Convert retriever names to actual retriever classes
     # Use get_default_retriever() as a fallback for any invalid retriever names
-    return [get_retriever(r) or get_default_retriever() for r in retrievers]
+    return [get_retriever(r) or get_default_retriever() for r in relevant_retrievers]
 
 
-def get_default_retriever(retriever):
-    from gpt_researcher.retrievers import TavilySearch
+def get_default_retriever():
+    from gpt_researcher.retrievers import CustomRetriever
 
-    return TavilySearch
+    return CustomRetriever
 
 
 async def choose_agent(
