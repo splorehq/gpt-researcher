@@ -15,6 +15,10 @@ class GenericLLMProvider:
             from langchain_openai import ChatOpenAI
 
             llm = ChatOpenAI(**kwargs)
+        elif provider == "litellm":
+            from langchain_community.chat_models import ChatLiteLLM
+
+            llm = ChatLiteLLM(**kwargs)
         elif provider == "anthropic":
             _check_pkg("langchain_anthropic")
             from langchain_anthropic import ChatAnthropic

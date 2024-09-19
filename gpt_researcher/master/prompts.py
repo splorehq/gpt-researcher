@@ -80,7 +80,9 @@ Please follow all of the following guidelines in your report:
 - You MUST write the report with markdown syntax and {report_format} format.
 - Use an unbiased and journalistic tone.
 - Use in-text citation references in {report_format} format and make it with markdown hyperlink placed at the end of the sentence or paragraph that references them like this: ([in-text citation](url)).
-- Make sure that the citations are valid and the name of the Hyperlink shallbe meaningful, instead of just saying 'example.com', 'sample.com' etc.,
+- Tag the citations only when there is sources from where the claims are taken from. Do not make up fictious links when claims are unverified.
+- Make sure that the citations are valid and links are drawn as-is from the provided context. The links are not something you tamper with to look like legit links.
+- Name of the anchor text for the cites Hyperlink shall be just the domain name of the referring link, instead of saying 'sources','localstudy','example.com', 'sample.com' etc.,
 - Don't forget to add a reference list at the end of the report in {report_format} format and full url links without hyperlinks.
 - {reference_prompt}
 - {tone_prompt}

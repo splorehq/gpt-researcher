@@ -30,7 +30,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-  - host: research-gpt.search.splore.ai
+  - host: gpt-researcher.search.splore.ai
     http:
       paths:
       - path: /
