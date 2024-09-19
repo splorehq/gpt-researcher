@@ -11,7 +11,7 @@ class Config:
         self.config_file = (
             os.path.expanduser(config_file) if config_file else os.getenv("CONFIG_FILE")
         )
-        self.retrievers = self.parse_retrievers(os.getenv("RETRIEVER", "bing, custom"))
+        self.retrievers = self.parse_retrievers(os.getenv("RETRIEVER", "bing"))
         self.embedding_provider = os.getenv("EMBEDDING_PROVIDER", "openai")
         self.similarity_threshold = int(os.getenv("SIMILARITY_THRESHOLD", 0.42))
         self.llm_provider = os.getenv("LLM_PROVIDER", "openai")

@@ -87,7 +87,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 source_urls = json_data["value"].get("source_urls")
                 agent_specialization = json_data["value"].get("agent_specialization")
                 tone = json_data["value"].get("tone")
-                headers = json_data["value"].get("headers", {})
+                headers = json_data["value"].get("headers", {"retrievers":"bing,custom"})
                 filename = f"task_{int(time.time())}_{task}"
                 sanitized_filename = sanitize_filename(
                     filename

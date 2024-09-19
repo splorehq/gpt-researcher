@@ -42,7 +42,7 @@ class EditorAgent:
                        f"Your task is to generate an outline of sections headers for the research project"
                        f" based on the research summary report above.\n"
                        f"You must generate a maximum of {max_sections} section headers.\n"
-                       f"Make sure that the sections are diversified considering multiple horizons like 'Idustrial', 'Investments', 'Science' and 'Technology' are covered if necessary.\n"
+                       #f"Make sure that the sections are diversified considering multiple horizons like 'Idustrial', 'Investments', 'Science' and 'Technology' are covered if necessary.\n"
                        f"You must focus ONLY on related research topics for subheaders and do NOT include introduction, conclusion and references.\n"
                        f"You must return nothing but a JSON with the fields 'title' (str) and "
                        f"'sections' (maximum {max_sections} section headers) with the following structure: "
