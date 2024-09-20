@@ -96,8 +96,8 @@ volumeMounts:
   mountPath: "/outputs"
   readOnly: false
 
-nodeSelector:
-  node: gpt
+# nodeSelector:
+#   node: gpt
 
 tolerations: []
 
