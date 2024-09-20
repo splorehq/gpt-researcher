@@ -114,19 +114,19 @@ def get_retrievers(headers, cfg, report_source):
         elif report_source == ReportSource.Web.value:
             if "bing" in retrievers:
                 relevant_retrievers.append("bing")
-            elif "tavily" in retrievers:
+            if "tavily" in retrievers:
                 relevant_retrievers.append("tavily")
-            elif "serpapi" in retrievers:
+            if "serpapi" in retrievers:
                 relevant_retrievers.append("serpapi")
-            elif "serpapi" in retrievers:
+            if "serpapi" in retrievers:
                 relevant_retrievers.append("serpapi")
-            elif "arxiv" in retrievers:
+            if "arxiv" in retrievers:
                 relevant_retrievers.append("arxiv")
-            elif "google" in retrievers:
+            if "google" in retrievers:
                 relevant_retrievers.append("google")
-            elif "serper" in retrievers:
+            if "serper" in retrievers:
                 relevant_retrievers.append("serper")
-            elif "duckduckgo" in retrievers:
+            if "duckduckgo" in retrievers:
                 relevant_retrievers.append("duckduckgo")
             #TO_DO: Add more retrievers as applicable to the case in question
     else:

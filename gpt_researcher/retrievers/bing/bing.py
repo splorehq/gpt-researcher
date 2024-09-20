@@ -64,7 +64,6 @@ class BingSearch():
         }
         
         resp = requests.get(url, headers=headers, params=params)
-        print("**************** BING Response **********", resp)
 
         # Preprocess the results
         if resp is None:
