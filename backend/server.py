@@ -84,9 +84,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 base_id = json_data["value"].get("base_id")
                 agent_id = json_data["value"].get("agent_id")
 
-                base_id = base_id if base_id else "STEN2imEGLyHBfz7hgYv28CQ1LjNaC9"
-                agent_id = agent_id if agent_id else "ABSC2imFB6aPuRSRnQtDp1qXmcI6eat"
-
                 report_type = "multi_agents"
                 report_style = json_data["value"].get("report_style")
                 source_urls = json_data["value"].get("source_urls")

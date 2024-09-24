@@ -118,6 +118,11 @@ class CustomRetriever:
               }
             ]
         """
+
+        if not base_id or not agent_id:
+            print("base_id or agent_id not found for custom search")
+            return None
+
         max_results = 5
         try:
             SPLORE_URL = "https://api.splore.ai/api/v1/retrieve"
@@ -127,21 +132,22 @@ class CustomRetriever:
                 "base_id": base_id,
                 "agent_id": agent_id
             }
-            
+
             response = self.make_post_request(SPLORE_URL, data)
 
             print("**************** SPLORE Response **********", response)
 
             if response and "docs" in response and isinstance(response["docs"], list) and len(response["docs"]) > 0:
                 response = response["docs"][:max_results]
-            else:                print("No documents found in the response.")
+            else:
+                print("No documents found in the response.")
                 return None
-            
+
             final_results = []
             for doc in response:
                 result = {"url": doc["metadata"]["external_link"], "raw_content": doc["snippet"]}
                 final_results.append(result)
-            
+
             return final_results
         
         except requests.RequestException as e:
