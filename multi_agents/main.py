@@ -28,7 +28,7 @@ def open_task():
 
     return task
 
-async def run_research_task(query, task_id=None, websocket=None, stream_output=None, tone=Tone.Objective, headers=None, source = None, report_style="detailed report", source_urls=None, agent_specialization=None):
+async def run_research_task(query, task_id=None, websocket=None, stream_output=None, tone=Tone.Objective, headers=None, source = None, report_style="detailed report", source_urls=None, agent_specialization=None, base_id=None, agent_id=None):
     task = open_task()
     task["query"] = query
     task["source"] = source
@@ -45,9 +45,8 @@ async def run_research_task(query, task_id=None, websocket=None, stream_output=N
         cur_ret = headers.get("retrievers", "")
         if cur_ret:
             headers["retrievers"] = f"{cur_ret},{special_retrievers}"
-        
 
-    chief_editor = ChiefEditorAgent(task, websocket, stream_output, tone, headers)
+    chief_editor = ChiefEditorAgent(task, websocket, stream_output, tone, headers, base_id, agent_id)
     research_report = await chief_editor.run_research_task()
 
     if websocket and stream_output:
