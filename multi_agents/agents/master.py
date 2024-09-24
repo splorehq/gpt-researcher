@@ -18,8 +18,10 @@ from . import \
 
 
 class ChiefEditorAgent:
-    def __init__(self, task: dict, websocket=None, stream_output=None, tone=None, headers=None):
+    def __init__(self, task: dict, websocket=None, stream_output=None, tone=None, headers=None, base_id=None, agent_id=None):
         self.task_id = int(time.time()) # Currently time based, but can be any unique identifier
+        self.base_id = base_id
+        self.agent_id = agent_id
         self.output_dir = "./outputs/" + sanitize_filename(f"run_{self.task_id}_{task.get('query')[0:40]}")
         self.task = task
         self.websocket = websocket
@@ -31,8 +33,8 @@ class ChiefEditorAgent:
     def init_research_team(self):
         # Initialize agents
         writer_agent = WriterAgent(self.websocket, self.stream_output, self.headers)
-        editor_agent = EditorAgent(self.websocket, self.stream_output, self.headers)
-        research_agent = ResearchAgent(self.websocket, self.stream_output, self.tone, self.headers)
+        editor_agent = EditorAgent(self.websocket, self.stream_output, self.headers, self.base_id, self.agent_id)
+        research_agent = ResearchAgent(self.websocket, self.stream_output, self.tone, self.headers, self.base_id, self.agent_id)
         publisher_agent = PublisherAgent(self.output_dir, self.websocket, self.stream_output, self.headers)
         human_agent = HumanAgent(self.websocket, self.stream_output, self.headers)
 

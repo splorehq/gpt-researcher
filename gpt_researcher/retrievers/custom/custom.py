@@ -60,48 +60,48 @@ class CustomRetriever:
             print(f"An error occurred: {e}")
             return None
     
-    def search(self, max_results: int = 5) -> Optional[List[Dict[str, Any]]]:
-        """
-        Performs the search using the custom retriever endpoint.
-
-        :param max_results: Maximum number of results to return (not currently used)
-        :return: JSON response in the format:
-            [
-              {
-                "url": "http://example.com/page1",
-                "raw_content": "Content of page 1"
-              },
-              {
-                "url": "http://example.com/page2",
-                "raw_content": "Content of page 2"
-              }
-            ]
-        """
-        try:
-            base_id = "STEN2imEGLyHBfz7hgYv28CQ1LjNaC9"
-            agent_id = "ABSC2imFB6aPuRSRnQtDp1qXmcI6eat"
-            SPLORE_URL = "https://api.splore.ai/api/v1/retrieve"
-
-            data = {
-                "query": self.query,
-                "base_id": base_id,
-                "agent_id": agent_id
-            }
-            
-            response = self.make_post_request(SPLORE_URL, data)
-            response = response["docs"][:5]
-            final_results = []
-            for doc in response:
-                result = {"url": doc["metadata"]["external_link"], "raw_content": doc["snippet"]}
-                final_results.append(result)
-            
-            return final_results
+    # def search(self, max_results: int = 5) -> Optional[List[Dict[str, Any]]]:
+    #     """
+    #     Performs the search using the custom retriever endpoint.
+    #
+    #     :param max_results: Maximum number of results to return (not currently used)
+    #     :return: JSON response in the format:
+    #         [
+    #           {
+    #             "url": "http://example.com/page1",
+    #             "raw_content": "Content of page 1"
+    #           },
+    #           {
+    #             "url": "http://example.com/page2",
+    #             "raw_content": "Content of page 2"
+    #           }
+    #         ]
+    #     """
+    #     try:
+    #         base_id = "STEN2imEGLyHBfz7hgYv28CQ1LjNaC9"
+    #         agent_id = "ABSC2imFB6aPuRSRnQtDp1qXmcI6eat"
+    #         SPLORE_URL = "https://api.splore.ai/api/v1/retrieve"
+    #
+    #         data = {
+    #             "query": self.query,
+    #             "base_id": base_id,
+    #             "agent_id": agent_id
+    #         }
+    #
+    #         response = self.make_post_request(SPLORE_URL, data)
+    #         response = response["docs"][:5]
+    #         final_results = []
+    #         for doc in response:
+    #             result = {"url": doc["metadata"]["external_link"], "raw_content": doc["snippet"]}
+    #             final_results.append(result)
+    #
+    #         return final_results
+    #
+    #     except requests.RequestException as e:
+    #         print(f"Failed to retrieve search results: {e}")
+    #         return None
         
-        except requests.RequestException as e:
-            print(f"Failed to retrieve search results: {e}")
-            return None
-        
-    def search(self, max_results=7, search_depth=None, include_domains=None, exclude_domains=None):
+    def search(self, max_results=7, search_depth=None, include_domains=None, exclude_domains=None, base_id=None, agent_id=None):
         """
         Performs the search using the custom retriever endpoint.
 
@@ -120,8 +120,6 @@ class CustomRetriever:
         """
         max_results = 5
         try:
-            base_id = "STEN2lGcs1cZYGtI1Fgr9Mc6D692jiX"
-            agent_id = "ABSC2lGm7ILu1bV8yLFPGfsrPtaFuYv"
             SPLORE_URL = "https://api.splore.ai/api/v1/retrieve"
 
             data = {
@@ -136,8 +134,7 @@ class CustomRetriever:
 
             if response and "docs" in response and isinstance(response["docs"], list) and len(response["docs"]) > 0:
                 response = response["docs"][:max_results]
-            else:
-                print("No documents found in the response.")
+            else:                print("No documents found in the response.")
                 return None
             
             final_results = []

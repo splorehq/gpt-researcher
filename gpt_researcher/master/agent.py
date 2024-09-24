@@ -38,7 +38,9 @@ class GPTResearcher:
         context=[],
         headers: dict = None,
         include_domains = None,
-        search_query_instructions = None
+        search_query_instructions = None,
+        base_id=None,
+        agent_id=None
     ):
         """
         Initialize the GPT Researcher class.
@@ -58,6 +60,8 @@ class GPTResearcher:
         self.headers = headers or {}
         self.query: str = query
         self.agent: str = agent
+        self.base_id = base_id
+        self.agent_id = agent_id
         self.role: str = role
         self.report_type: str = report_type
         self.report_prompt: str = get_prompt_by_report_type(
@@ -468,7 +472,7 @@ class GPTResearcher:
 
         # Perform the search using the current retriever
         search_results = await asyncio.to_thread(
-            retriever.search, max_results=self.cfg.max_search_results_per_query
+            retriever.search, max_results=self.cfg.max_search_results_per_query, base_id=self.base_id, agent_id=self.agent_id
         )
 
         # Log the research process if verbose mode is on
@@ -527,7 +531,7 @@ class GPTResearcher:
 
             # Perform the search using the current retriever
             search_results = await asyncio.to_thread(
-                retriever.search, max_results=self.cfg.max_search_results_per_query, search_depth="basic", include_domains=include_domains
+                retriever.search, max_results=self.cfg.max_search_results_per_query, search_depth="basic", include_domains=include_domains, base_id=self.base_id, agent_id=self.agent_id
             )
 
             # Collect new URLs from search results
