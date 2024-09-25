@@ -39,6 +39,8 @@ You have been tasked by your reviewer with revising the following draft, which w
 If you decide to follow the reviewer's notes, please write a new draft and make sure to address all of the points they raised.
 Please keep all other aspects of the draft the same. Ensure the quoted citations are valid links that is provided to you explicitely in the context. 
 This is not something that you tamper with to look like legit links.\n",
+Make sure that the citations are named properly according to the reference it should not be like 'Source' etc.,
+Make sure that there are no Page Numbers in the citations for a pdf, just link of PDF is enough, page number is not required.
 You MUST return nothing but a JSON in the following format:
 {sample_revision_notes}
 """,
