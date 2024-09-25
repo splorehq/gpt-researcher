@@ -5,7 +5,7 @@ import operator
 class ResearchState(TypedDict):
     task: dict
     initial_research: str
-    sections: List[str]
+    sections: list
     research_data: List[dict]
     human_feedback: str
     # Report layout

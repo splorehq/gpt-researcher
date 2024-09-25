@@ -119,9 +119,10 @@ class EditorAgent:
             chain.ainvoke(
                 {
                     "task": research_state.get("task"),
-                    "topic": query,  # + (f". Also: {human_feedback}" if human_feedback is not None else ""),
+                    "topic": query["title"],  # + (f". Also: {human_feedback}" if human_feedback is not None else ""),
                     "title": title,
                     "headers": self.headers,
+                    "guidelines": query["instructions"]
                 }
             )
             for query in queries
