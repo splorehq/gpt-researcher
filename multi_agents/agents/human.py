@@ -27,7 +27,7 @@ class HumanAgent:
                         feedback = response_data.get("value")
                     user_feedback = [
                         {
-                            "title": feedback[0],
+                            "title": "Article 6 of the Paris Agreement",
                             "instructions": """You are a senior carbon market analyst at GenZero, a Temasek-founded investment platform company focused on accelerating global decarbonization. Your task is to write the "Policy Analysis" section of a strategic brief on carbon market developments.
 
 When writing the "Policy Analysis" section:

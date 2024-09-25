@@ -40,7 +40,8 @@ class GPTResearcher:
         include_domains = None,
         search_query_instructions = None,
         base_id=None,
-        agent_id=None
+        agent_id=None,
+        guidelines=None
     ):
         """
         Initialize the GPT Researcher class.
@@ -100,6 +101,7 @@ class GPTResearcher:
         self.subtopics = subtopics
         self.include_domains = include_domains
         self.search_query_instructions = search_query_instructions
+        self.guidelines = guidelines
 
     async def conduct_research(self):
         """
@@ -201,6 +203,8 @@ class GPTResearcher:
                 f"✍️ Writing summary for research task: {self.query} (this may take a few minutes)...",
                 self.websocket,
             )
+
+
 
         report_params = {
             "query": self.query,

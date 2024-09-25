@@ -10,7 +10,6 @@
   "follow_guidelines": true,
   "model": "gpt-4o",
   "guidelines": [
-    "Give equal importance to Local Documents and Web Documents while creating the report.\n",
     "Each sub section MUST include supporting sources using hyperlinks. If none exist, erase the sub section or rewrite it to be a part of the previous section\n",
     "Give response in Markdown format to make it look beautiful.\n",
     "Ensure the citations are valid links that is provided to you explicitely in the context. This is not something that you fabricate to look like legit links.\n",
