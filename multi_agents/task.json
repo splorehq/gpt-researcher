@@ -8,7 +8,7 @@
   },
   "include_human_feedback": true,
   "follow_guidelines": true,
-  "model": "gpt-4o",
+  "model": "azure/gpt_4o_chat",
   "guidelines": [
     "Give equal importance to Local Documents and Web Documents while creating the report.\n",
     "Each sub section MUST include supporting sources using hyperlinks. If none exist, erase the sub section or rewrite it to be a part of the previous section\n",
