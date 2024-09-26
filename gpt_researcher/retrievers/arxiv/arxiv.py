@@ -12,7 +12,7 @@ class ArxivSearch:
         self.sort = arxiv.SortCriterion.SubmittedDate if sort == 'SubmittedDate' else arxiv.SortCriterion.Relevance
         
 
-    def search(self, max_results=5, search_depth=None, include_domains=None, exclude_domains=None):
+    def search(self, max_results=5, search_depth=None, include_domains=None, exclude_domains=None, base_id=None, agent_id=None):
         """
         Performs the search
         :param query:
