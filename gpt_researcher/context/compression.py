@@ -11,7 +11,7 @@ from langchain.retrievers.document_compressors import (
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from gpt_researcher.utils.costs import estimate_embedding_cost
-from gpt_researcher.memory.embeddings import OPENAI_EMBEDDING_MODEL
+from gpt_researcher.memory.embeddings import OPENAI_EMBEDDING_MODEL, AZURE_EMBEDDING_MODEL
 
 
 class VectorstoreCompressor:
@@ -64,14 +64,17 @@ class ContextCompressor:
     def get_context(self, query, max_results=5, cost_callback=None):
         compressed_docs = self.__get_contextual_retriever()
         if cost_callback:
-            cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
+            # cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
+            cost_callback(estimate_embedding_cost(model=AZURE_EMBEDDING_MODEL, docs=self.documents))
         relevant_docs = compressed_docs.invoke(query)
         return self.__pretty_print_docs(relevant_docs, max_results)
 
     async def async_get_context(self, query, max_results=5, cost_callback=None):
         compressed_docs = self.__get_contextual_retriever()
         if cost_callback:
-            cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
+            # cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
+            cost_callback(estimate_embedding_cost(model=AZURE_EMBEDDING_MODEL, docs=self.documents))
+
         relevant_docs = await asyncio.to_thread(compressed_docs.invoke, query)
         return self.__pretty_print_docs(relevant_docs, max_results)
 
@@ -104,6 +107,7 @@ class WrittenContentCompressor:
     async def async_get_context(self, query, max_results=5, cost_callback=None):
         compressed_docs = self.__get_contextual_retriever()
         if cost_callback:
-            cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
+            # cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
+            cost_callback(estimate_embedding_cost(model=AZURE_EMBEDDING_MODEL, docs=self.documents))
         relevant_docs = await asyncio.to_thread(compressed_docs.invoke, query)
         return self.__pretty_docs_list(relevant_docs, max_results)

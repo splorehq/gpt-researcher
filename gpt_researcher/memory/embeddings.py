@@ -2,6 +2,7 @@ from langchain_community.vectorstores import FAISS
 import os
 
 OPENAI_EMBEDDING_MODEL = os.environ.get("OPENAI_EMBEDDING_MODEL","text-embedding-3-small")
+AZURE_EMBEDDING_MODEL = os.environ.get("AZURE_EMBEDDING_MODEL","text-embedding-3-small")
 
 
 class Memory:
@@ -41,7 +42,7 @@ class Memory:
                 from langchain_openai import AzureOpenAIEmbeddings
 
                 _embeddings = AzureOpenAIEmbeddings(
-                    deployment=os.environ["AZURE_EMBEDDING_MODEL"], chunk_size=16
+                    deployment=AZURE_EMBEDDING_MODEL
                 )
             case "huggingface":
                 from langchain.embeddings import HuggingFaceEmbeddings
