@@ -41,7 +41,8 @@ class GPTResearcher:
         search_query_instructions = None,
         base_id=None,
         agent_id=None,
-        guidelines=None
+        guidelines=None,
+        preferred_agents = None
     ):
         """
         Initialize the GPT Researcher class.
@@ -102,6 +103,7 @@ class GPTResearcher:
         self.include_domains = include_domains
         self.search_query_instructions = search_query_instructions
         self.guidelines = guidelines
+        self.preferred_agents = preferred_agents
 
     async def conduct_research(self):
         """
@@ -130,14 +132,16 @@ class GPTResearcher:
                 parent_query=self.parent_query,
                 cost_callback=self.add_costs,
                 headers=self.headers,
+                preferred_agents=self.preferred_agents
             )
 
         #overrite the search query prompt if it is provided in the config
         if self.search_query_instructions:
             self.role = self.search_query_instructions
 
-        if self.guidelines:
-            self.role = self.guidelines
+        # TO:DO: Add HITL guidelines at the section level
+        # if self.guidelines:
+        #     self.role = self.guidelines
 
         if self.verbose:
             await stream_output("logs", "agent_generated", self.agent, self.websocket)

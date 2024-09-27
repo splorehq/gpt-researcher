@@ -34,10 +34,11 @@ async def run_research_task(query, task_id=None, websocket=None, stream_output=N
     task["source"] = source
     task["report_style"] = report_style
     task["source_urls"] = source_urls
-    special_retrievers, include_domains, system_instructions, search_query_instructions = await get_secialisation_config(agent_specialization)
+    special_retrievers, include_domains, system_instructions, search_query_instructions, preferred_agents = await get_secialisation_config(agent_specialization)
     task["include_domains"] = include_domains
     task["system_instructions"] = system_instructions
     task["search_query_instructions"] = search_query_instructions
+    task["preferred_agents"] = preferred_agents
     task["task_id"] = task_id
 
     #update the special_retrievers in the headers
@@ -61,8 +62,10 @@ async def get_secialisation_config(agent_specialization):
                 "layout based on an initial research summary.\n """
     search_query_instructions = None
     special_retrievers = None    
+    preferred_agents = None
     if agent_specialization == 'investment':
         include_domains = []# ["https://www.iucn.org/","https://www.wri.org/","https://www.unep.org/","https://www.fao.org/","https://www.cbd.int/","https://www.thegef.org/","https://www.worldwildlife.org/","https://www.birdlife.org/","https://www.nature.org/","https://www.ifpri.org/","https://www.worldbank.org/en/topic/environment","https://glp.earth/","https://www.undp.org/","https://www.ramsar.org/","https://www.iied.org/","https://www.conservation.org/","https://www.adb.org/sectors/environment/main","https://www.icimod.org/","http://teebweb.org/","https://www.mandainature.org/","https://www.reuters.com/business/energy/","https://www.bloomberg.com/energy","https://www.greentechmedia.com/","https://energynews.us/","https://www.renewableenergyworld.com/","https://www.energymonitor.ai/","https://www.pv-tech.org/","https://www.carbonbrief.org/","https://www.offshorewind.biz/","https://cleantechnica.com/","https://www.spglobal.com/platts/en","https://www.energyvoice.com/","https://www.euractiv.com/section/energy-environment/","https://www.axios.com/energy","https://www.power-technology.com/","https://www.reuters.com/business/environment","https://carbon-pulse.com/","https://www.bloomberg.com/green","https://www.climatechangenews.com/","https://www.carbonbrief.org/","https://www.ecosystemmarketplace.com/","https://www.ft.com/climate-capital","https://www.spglobal.com/platts/en/market-insights/latest-news/energy-transition","https://www.theguardian.com/environment/climate-crisis","https://www.axios.com/climate","https://www.euractiv.com/section/climate-environment/","https://insideclimatenews.org/","https://www.environmental-finance.com/","https://www.icis.com/explore/services/carbon-markets/"]
+        preferred_agents = ['policy']
         system_instructions = """You are a senior scientific analyst at a top-tier global deep tech VC firm. "
                         "Your expertise lies in conducting PhD-level research by analyzing market reports, surveys, "
                         "scientific studies, and other relevant sources to identify promising technological innovations and potential risks. "
@@ -95,7 +98,7 @@ You first identify the country or region of interest and create foreign language
 Your goal is to uncover knowledge gaps, assess strategic alignment, and identify high-potential opportunities, leveraging academic and industry sources such as IEEE, arXiv, and reports from institutions like ADB and UNDP."""
 
         
-    return special_retrievers, include_domains, system_instructions, search_query_instructions
+    return special_retrievers, include_domains, system_instructions, search_query_instructions, preferred_agents
 
 async def main():
     task = open_task()

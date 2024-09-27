@@ -144,7 +144,7 @@ def get_default_retriever():
 
 
 async def choose_agent(
-    query, cfg, parent_query=None, cost_callback: callable = None, headers=None
+    query, cfg, parent_query=None, cost_callback: callable = None, headers=None, preferred_agents=None
 ):
     """
     Chooses the agent automatically
