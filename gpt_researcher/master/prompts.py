@@ -193,6 +193,19 @@ response:
 """
 
 
+def classify_agents_prompt():
+    return """You are a classifier that identifies if the provided task is related to some kind of policy. Your job is to return a structured output that categorizes the task as either "Policy" or "Other." A "Policy" task refers to something involving guidelines, rules, or regulations, while any other type of task should be categorized as "Other."
+
+For the following task, provide the classification in the specified format:
+
+Examples:
+task: "Write the company's new privacy policy."
+response:
+{
+    "class": "Policy"
+}"""
+
+
 def generate_summary_prompt(query, data):
     """Generates the summary prompt for the given question and text.
     Args: question (str): The question to generate the summary prompt for
@@ -402,7 +415,7 @@ def get_system_prompt_by_report_type(report_type):
 
 
 
-dummy ='''adasdsa
+policy_agent_prompt ='''adasdsa
 "instructions": """You are a senior carbon market analyst at GenZero, a Temasek-founded investment platform company focused on accelerating global decarbonization. Your task is to write the "Policy Analysis" section of a strategic brief on carbon market developments.
 
 When writing the "Policy Analysis" section:

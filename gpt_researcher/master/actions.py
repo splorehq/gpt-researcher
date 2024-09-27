@@ -161,12 +161,14 @@ async def choose_agent(
     """
     query = f"{parent_query} - {query}" if parent_query else f"{query}"
     response = None  # Initialize response to ensure it's defined
+    agent_dict={}
 
-    try:
-        response = await create_chat_completion(
+    # Classify the according to the query
+    if parent_query:
+        response_for_classification = await create_chat_completion(
             model=cfg.smart_llm_model,
             messages=[
-                {"role": "system", "content": f"{auto_agent_instructions()}"},
+                {"role": "system", "content": f"{classify_agents_prompt()}"},
                 {"role": "user", "content": f"task: {query}"},
             ],
             temperature=0,
@@ -175,7 +177,26 @@ async def choose_agent(
             cost_callback=cost_callback,
         )
 
-        agent_dict = json.loads(response)
+        response_for_classification = json.loads(response_for_classification)
+        classification = response_for_classification["class"]
+    try:
+        if classification.lower() in preferred_agents:
+            agent_dict["server"] = "Policy Agent"
+            agent_dict["agent_role_prompt"] = policy_agent_prompt
+        else:
+            response = await create_chat_completion(
+                model=cfg.smart_llm_model,
+                messages=[
+                    {"role": "system", "content": f"{auto_agent_instructions()}"},
+                    {"role": "user", "content": f"task: {query}"},
+                ],
+                temperature=0,
+                llm_provider=cfg.llm_provider,
+                llm_kwargs=cfg.llm_kwargs,
+                cost_callback=cost_callback,
+            )
+
+            agent_dict = json.loads(response)
         return agent_dict["server"], agent_dict["agent_role_prompt"]
 
     except Exception as e:
