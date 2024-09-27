@@ -456,7 +456,7 @@ async def generate_report(
     else:
         content = f"{generate_prompt(query, context, report_source, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words)}"
     try:
-        agent_role_prompt = f" {agent_role_prompt} .You must use only the content provided in the context and the main topic. Do not try to generate content on your own or use external sources."
+        agent_role_prompt = f" {agent_role_prompt} .You must use only the content provided in the user context and the main topic. Must not use data as-is from sample given here in the system prompt. Do not try to generate content on your own or use external sources."
         print(f"Generating report for the query {query} with content: {content}")
         report = await create_chat_completion(
             model=cfg.smart_llm_model,

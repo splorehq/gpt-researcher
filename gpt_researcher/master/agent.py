@@ -136,6 +136,9 @@ class GPTResearcher:
         if self.search_query_instructions:
             self.role = self.search_query_instructions
 
+        if self.guidelines:
+            self.role = self.guidelines
+
         if self.verbose:
             await stream_output("logs", "agent_generated", self.agent, self.websocket)
 
