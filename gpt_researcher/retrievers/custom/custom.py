@@ -125,7 +125,10 @@ class CustomRetriever:
 
         max_results = 5
         try:
-            SPLORE_URL = "https://api.splore.ai/api/v1/retrieve"
+            try:
+                splore_url = os.environ["SPLORE_URL"]
+            except KeyError:
+                raise Exception("SPLORE_URL key not found. Please set the SPLORE_URL environment variable.")
 
             data = {
                 "query": self.query,
@@ -133,7 +136,7 @@ class CustomRetriever:
                 "agent_id": agent_id
             }
 
-            response = self.make_post_request(SPLORE_URL, data)
+            response = self.make_post_request(splore_url, data)
 
             print("**************** SPLORE Response **********", response)
 
