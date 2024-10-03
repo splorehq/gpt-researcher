@@ -4,17 +4,19 @@ from .utils.views import print_agent_output
 
 
 class ResearchAgent:
-    def __init__(self, websocket=None, stream_output=None, tone=None, headers=None):
+    def __init__(self, websocket=None, stream_output=None, tone=None, headers=None, base_id=None, agent_id=None):
         self.websocket = websocket
         self.stream_output = stream_output
         self.headers = headers or {}
+        self.base_id = base_id
+        self.agent_id = agent_id
         self.tone = tone
 
     async def research(self, query: str, research_report: str = "research_report",
                        parent_query: str = "", verbose=True, source="web", tone=None, headers=None, source_urls=None, include_domains=None, search_query_instructions=None):
         # Initialize the researcher
         researcher = GPTResearcher(query=query, report_type=research_report, parent_query=parent_query,
-                                   verbose=verbose, report_source=source, tone=tone, websocket=self.websocket, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions)
+                                   verbose=verbose, report_source=source, tone=tone, websocket=self.websocket, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions, base_id=self.base_id, agent_id=self.agent_id)
        # Conduct research on the given query
         await researcher.conduct_research()
         # Write the report

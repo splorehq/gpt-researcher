@@ -71,6 +71,26 @@ spec:
                 secretKeyRef:
                   name: gpt-secret
                   key: AZURE_API_KEY
+            - name: AZURE_OPENAI_API_KEY
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: AZURE_OPENAI_API_KEY
+            - name: AZURE_OPENAI_ENDPOINT
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: AZURE_OPENAI_ENDPOINT
+            - name: AZURE_OPENAI_API_VERSION
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: AZURE_OPENAI_API_VERSION
+            - name: SPLORE_URL
+              valueFrom: 
+                secretKeyRef:
+                  name: gpt-secret
+                  key: SPLORE_URL
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.volumeMounts }}
