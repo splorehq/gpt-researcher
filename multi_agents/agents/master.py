@@ -33,7 +33,7 @@ class ChiefEditorAgent:
     def init_research_team(self):
         # Initialize agents
         writer_agent = WriterAgent(self.websocket, self.stream_output, self.headers)
-        editor_agent = EditorAgent(self.websocket, self.stream_output, self.headers, self.base_id, self.agent_id)
+        editor_agent = EditorAgent(self.websocket, self.stream_output, self.tone, self.headers, self.base_id, self.agent_id)
         research_agent = ResearchAgent(self.websocket, self.stream_output, self.tone, self.headers, self.base_id, self.agent_id)
         publisher_agent = PublisherAgent(self.output_dir, self.websocket, self.stream_output, self.headers)
         human_agent = HumanAgent(self.websocket, self.stream_output, self.headers)

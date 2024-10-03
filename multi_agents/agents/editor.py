@@ -10,9 +10,10 @@ from . import ResearchAgent, ReviewerAgent, ReviserAgent
 
 
 class EditorAgent:
-    def __init__(self, websocket=None, stream_output=None, headers=None, base_id=None, agent_id=None):
+    def __init__(self, websocket=None, stream_output=None, tone=None, headers=None, base_id=None, agent_id=None):
         self.websocket = websocket
         self.stream_output = stream_output
+        self.tone = tone
         self.headers = headers or {}
         self.base_id = base_id
         self.agent_id = agent_id
@@ -71,7 +72,7 @@ class EditorAgent:
         task = research_state.get("task")
         report_style = task.get("report_style")
         
-        research_agent = ResearchAgent(self.websocket, self.stream_output, self.headers, self.base_id, self.agent_id)
+        research_agent = ResearchAgent(self.websocket, self.stream_output, self.tone, self.headers, self.base_id, self.agent_id)
         queries = research_state.get("sections")
         title = research_state.get("title")
         
