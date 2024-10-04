@@ -52,7 +52,8 @@ Instructions:
     def generate_layout(self, research_state: dict , executive_summary: str):
         sections = '\n\n'.join(f"{value}"
                                  for subheader in research_state.get("research_data")
-                                 for key, value in subheader.items())
+                                 for key, value in subheader.items()
+                                 if value is not None)
         references = '\n'.join(f"{reference}" for reference in research_state.get("sources"))
         headers = research_state.get("headers")
         task = research_state.get("task")
