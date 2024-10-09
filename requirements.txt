@@ -30,6 +30,9 @@ json_repair
 json5
 loguru
 litellm
+boto3
+psycopg-pool
+psycopg
 
 # uncomment for testing
 # pytest
