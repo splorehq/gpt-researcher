@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from typing import Annotated
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.utils import write_md_to_pdf, write_md_to_word, write_text_to_md
 from backend.websocket_manager import WebSocketManager
@@ -18,10 +20,11 @@ import shutil
 from multi_agents.main import run_research_task
 from gpt_researcher.document.document import DocumentLoader
 from gpt_researcher.master.actions import stream_output
-from aws_secret_manager import AWSecretsManager
-from psql import PSQLSessionMgr
+from backend.aws_secret_manager import AWSecretsManager
+from backend.psql import PSQLSessionMgr
 from backend import ext_service_config
 from db.db_utils import get_agent
+from backend.entities import AgentConfig
 
 class ResearchRequest(BaseModel):
     task: str
@@ -83,68 +86,68 @@ def sanitize_filename(filename):
     return re.sub(r"[^\w\s-]", "", filename).strip()
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, psql_sess: Annotated[AsyncSession, Depends(get_psql_session)]):
     await manager.connect(websocket)
-    async with get_psql_session() as psql_sess:
-        try:
-            while True:
-                data = await websocket.receive_text()
-                logger.info(f"Received data: {data}")
-                if data.startswith("start"):
-                    json_data = json.loads(data[6:])
-                    task = json_data["value"].get("task")
-                    task_id = int(time.time())
-                    base_id = json_data["value"].get("base_id")
-                    agent_id = json_data["value"].get("agent_id")
+    try:
+        while True:
+            data = await websocket.receive_text()
+            logger.info(f"Received data: {data}")
+            if data.startswith("start"):
+                json_data = json.loads(data[6:])
+                task = json_data["value"].get("task")
+                task_id = int(time.time())
+                base_id = "STEN2imEGLyHBfz7hgYv28CQ1LjNaC9"
+                agent_id = "ABSC2mb7Nt4iUy2RpjPSPFcv2S2vidE"
 
-                    report_type = "multi_agents"
-                    report_style = json_data["value"].get("report_style")
-                    source_urls = json_data["value"].get("source_urls")
-                    agent_specialization = json_data["value"].get("agent_specialization")
-                    tone = json_data["value"].get("tone")
-                    headers = json_data["value"].get("headers", {"retrievers":"bing,custom"})
-                    filename = f"task_{int(time.time())}_{task}"
-                    sanitized_filename = sanitize_filename(
-                        filename
-                    )  # Sanitize the filename
-                    report_source = json_data["value"].get("report_source")
-                    agent_conf, base_id, agent_id, err = get_agent(psql_sess=psql_sess, base_id=None, agent_id=agent_id, agent_name=None)
-                    if task and report_type:
-                        report = await manager.start_streaming(
-                            task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization,
-                            base_id, agent_id
-                        )
-                        # Ensure report is a string
-                        if not isinstance(report, str):
-                            report = str(report)
+                report_type = "multi_agents"
+                report_style = "summary"
+                source_urls = json_data["value"].get("source_urls")
+                agent_specialization = "investment"
+                tone = json_data["value"].get("tone")
+                headers = json_data["value"].get("headers", {"retrievers":"bing,custom"})
+                filename = f"task_{int(time.time())}_{task}"
+                sanitized_filename = sanitize_filename(
+                    filename
+                )  # Sanitize the filename
+                report_source = json_data["value"].get("report_source")
+                agent_conf = await get_agent(psql_sess=psql_sess, base_id=None, agent_id=agent_id, agent_name=None)
+                agent_conf = AgentConfig(**agent_conf)
+                if task and report_type:
+                    report = await manager.start_streaming(
+                        task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization,
+                        base_id, agent_id
+                    )
+                    # Ensure report is a string
+                    if not isinstance(report, str):
+                        report = str(report)
 
-                        # Saving report as pdf
-                        pdf_path = await write_md_to_pdf(report, sanitized_filename)
-                        # Saving report as docx
-                        docx_path = await write_md_to_word(report, sanitized_filename)
-                        # Returning the path of saved report files
-                        md_path = await write_text_to_md(report, sanitized_filename)
-                        await websocket.send_json(
-                            {
-                                "type": "path",
-                                "output": {
-                                    "pdf": pdf_path,
-                                    "docx": docx_path,
-                                    "md": md_path,
-                                },
-                            }
-                        )
-                    elif data.startswith("human_feedback"):
-                        # Handle human feedback
-                        feedback_data = json.loads(data[14:])  # Remove "human_feedback" prefix
-                        # Process the feedback data as needed
-                        # You might want to send this feedback to the appropriate agent or update the research state
-                        print(f"Received human feedback: {feedback_data}")
-                        # You can add logic here to forward the feedback to the appropriate agent or update the research state
-                    else:
-                        print("Error: not enough parameters provided.")
-        except WebSocketDisconnect:
-            await manager.disconnect(websocket)
+                    # Saving report as pdf
+                    pdf_path = await write_md_to_pdf(report, sanitized_filename)
+                    # Saving report as docx
+                    docx_path = await write_md_to_word(report, sanitized_filename)
+                    # Returning the path of saved report files
+                    md_path = await write_text_to_md(report, sanitized_filename)
+                    await websocket.send_json(
+                        {
+                            "type": "path",
+                            "output": {
+                                "pdf": pdf_path,
+                                "docx": docx_path,
+                                "md": md_path,
+                            },
+                        }
+                    )
+                elif data.startswith("human_feedback"):
+                    # Handle human feedback
+                    feedback_data = json.loads(data[14:])  # Remove "human_feedback" prefix
+                    # Process the feedback data as needed
+                    # You might want to send this feedback to the appropriate agent or update the research state
+                    print(f"Received human feedback: {feedback_data}")
+                    # You can add logic here to forward the feedback to the appropriate agent or update the research state
+                else:
+                    print("Error: not enough parameters provided.")
+    except WebSocketDisconnect:
+        await manager.disconnect(websocket)
 
 @app.post("/api/multi_agents")
 async def run_multi_agents():

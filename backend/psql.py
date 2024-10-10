@@ -2,7 +2,7 @@ import json
 import contextlib
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
-from aws_secret_manager import AWSecretsManager
+from backend.aws_secret_manager import AWSecretsManager
 from psycopg_pool import AsyncConnectionPool
 
 Base = declarative_base()
