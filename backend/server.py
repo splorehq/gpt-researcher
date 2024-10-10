@@ -96,13 +96,13 @@ async def websocket_endpoint(websocket: WebSocket, psql_sess: Annotated[AsyncSes
                 json_data = json.loads(data[6:])
                 task = json_data["value"].get("task")
                 task_id = int(time.time())
-                base_id = "STEN2imEGLyHBfz7hgYv28CQ1LjNaC9"
-                agent_id = "ABSC2mb7Nt4iUy2RpjPSPFcv2S2vidE"
+                base_id = json_data["value"].get("base_id")
+                agent_id = json_data["value"].get("agent_id")
 
                 report_type = "multi_agents"
-                report_style = "summary"
+                report_style = json_data["value"].get("report_style")
                 source_urls = json_data["value"].get("source_urls")
-                agent_specialization = "investment"
+                agent_specialization = json_data["value"].get("agent_specialization")
                 tone = json_data["value"].get("tone")
                 headers = json_data["value"].get("headers", {"retrievers":"bing,custom"})
                 filename = f"task_{int(time.time())}_{task}"
