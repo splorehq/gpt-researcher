@@ -147,6 +147,7 @@ class AgentConfig(BaseModel):
     system_base_ids: Optional[List[str]] = Field(default=[])
     chat_config: Optional[Dict] = Field(default=None)
     web_search_config: Optional[Dict] = Field(default=None)
+    prompts_id: Optional[str] = Field(default=None)
 
     @model_validator(mode="after")
     def exclude_sites_to_array(self) -> "AgentConfig":

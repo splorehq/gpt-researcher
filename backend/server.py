@@ -25,6 +25,7 @@ from backend.psql import PSQLSessionMgr
 from backend import ext_service_config
 from db.db_utils import get_agent
 from backend.entities import AgentConfig
+from db.get_prompts import read_prompt_template_by_prompts_id
 
 class ResearchRequest(BaseModel):
     task: str
@@ -112,6 +113,7 @@ async def websocket_endpoint(websocket: WebSocket, psql_sess: Annotated[AsyncSes
                 report_source = json_data["value"].get("report_source")
                 agent_conf = await get_agent(psql_sess=psql_sess, base_id=None, agent_id=agent_id, agent_name=None)
                 agent_conf = AgentConfig(**agent_conf)
+                prompts_from_db = await read_prompt_template_by_prompts_id(psql_sess=psql_sess, cols=["name", "template"], prompts_id=agent_conf.prompts_id)
                 if task and report_type:
                     report = await manager.start_streaming(
                         task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization,

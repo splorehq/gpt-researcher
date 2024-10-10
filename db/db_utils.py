@@ -24,7 +24,7 @@ async def get_agent(psql_sess: AsyncSession, base_id: Union[str, None], agent_id
     base_conf_cols = [
         "id", "base_id", "topk", "use_internal_data", "enable_web_search", "llm_model_name", "llm_temperature",
         "classify_queries", "rewrite_queries", "query_regen_count", "use_spr", "prompts", "ranking_profile",
-        "reranking_profile", "exclude_sites", "run_profanity_check", "reranking_threshold", "chat_config","web_search_config"
+        "reranking_profile", "exclude_sites", "run_profanity_check", "reranking_threshold", "chat_config", "web_search_config", "prompts_id"
     ]
     agent_conf = await read_agent_conf_by_id(psql_sess, base_conf_cols, agent_id)
 

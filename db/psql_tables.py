@@ -39,6 +39,7 @@ class ChatAgents(Base):
     exclude_keywords: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String))
     chat_config: Mapped[Optional[dict]] = mapped_column(__type_pos=JSONB)
     web_search_config: Mapped[Optional[dict]] = mapped_column(__type_pos=JSONB)
+    prompts_id: Mapped[str]
 
 
 class PromptTemplates(Base):
