@@ -39,3 +39,34 @@ class ChatAgents(Base):
     exclude_keywords: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String))
     chat_config: Mapped[Optional[dict]] = mapped_column(__type_pos=JSONB)
     web_search_config: Mapped[Optional[dict]] = mapped_column(__type_pos=JSONB)
+
+
+class PromptTemplates(Base):
+    __tablename__ = "prompt_templates"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[str] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str]
+    template: Mapped[dict] = mapped_column("template", JSONB)
+    version: Mapped[int]
+    created_at: Mapped[datetime]
+    updated_at: Mapped[datetime]
+    is_current: Mapped[bool]
+
+
+class PromptTemplatesGroups(Base):
+    __tablename__ = "prompt_templates_groups"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[str] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str]
+    variables: Mapped[dict] = mapped_column("variables", JSONB)
+
+
+class PromptTemplatesGroupsMapping(Base):
+    __tablename__ = "prompt_templates_groups_mapping"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[str] = mapped_column(primary_key=True, index=True)
+    group_id: Mapped[str] = mapped_column(index=True)
+    template_id: Mapped[str] = mapped_column(index=True)
