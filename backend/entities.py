@@ -146,7 +146,7 @@ class AgentConfig(BaseModel):
     base_name: Optional[str] = Field(default=None)
     system_base_ids: Optional[List[str]] = Field(default=[])
     chat_config: Optional[Dict] = Field(default=None)
-    web_search_config: Optional[Dict] = Field(default=None)
+    web_search_config: Optional[List] = Field(default=None)
     prompts_id: Optional[str] = Field(default=None)
 
     @model_validator(mode="after")

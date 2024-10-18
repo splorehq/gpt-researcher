@@ -144,7 +144,7 @@ def get_default_retriever():
 
 
 async def choose_agent(
-    query, cfg, parent_query=None, cost_callback: callable = None, headers=None
+    query, cfg, parent_query=None, cost_callback: callable = None, headers=None, prompts_from_db = None
 ):
     """
     Chooses the agent automatically
@@ -166,7 +166,7 @@ async def choose_agent(
         response = await create_chat_completion(
             model=cfg.smart_llm_model,
             messages=[
-                {"role": "system", "content": f"{auto_agent_instructions()}"},
+                {"role": "system", "content": prompts_from_db["auto_agent_instructions"]["system"]},
                 {"role": "user", "content": f"task: {query}"},
             ],
             temperature=0,
@@ -217,6 +217,7 @@ async def get_sub_queries(
     query: str,
     agent_role_prompt: str,
     cfg,
+    prompts_from_db,
     parent_query: str,
     report_type: str,
     cost_callback: callable = None,
@@ -242,11 +243,13 @@ async def get_sub_queries(
             {"role": "system", "content": f"{agent_role_prompt}"},
             {
                 "role": "user",
+                "content": prompts_from_db,
                 "content": generate_search_queries_prompt(
                     query,
                     parent_query,
                     report_type,
                     max_iterations=max_research_iterations,
+                    prompts_from_db=prompts_from_db
                 ),
             },
         ],

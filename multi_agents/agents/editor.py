@@ -32,7 +32,7 @@ class EditorAgent:
         max_sections = task.get("max_sections")
         include_human_feedback = task.get("include_human_feedback")
         human_feedback = research_state.get("human_feedback")
-        system_instructions = task["system_instructions"]
+        system_instructions = task["system_instructions"]["system"]
 
         prompt = [{
             "role": "system",

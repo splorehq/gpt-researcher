@@ -8,6 +8,7 @@ def generate_search_queries_prompt(
     question: str,
     parent_query: str,
     report_type: str,
+    prompts_from_db,
     max_iterations: int = 3,
 ):
     """Generates the search queries prompt for the given question.
@@ -27,14 +28,12 @@ def generate_search_queries_prompt(
         task = f"{parent_query} - {question}"
     else:
         task = question
+    
+    current_date = datetime.now().strftime("%d-%m-%Y")
+    prompt = prompts_from_db["generate_search_queries_prompt"]["user"]
+    final_prompt = prompt.format(max_iterations=max_iterations, task=task, current_date=current_date)
 
-    return (
-        f'Write {max_iterations} google search queries to search online that form an objective opinion from the following task: "{task}"\n'
-        f'Make sure that the queries are diverse covering mutiple horizons like "Idustrial", "Investments", "Science" and "Technology " if the "{task}" is suitable for them.\n'
-        f'The current day date is: "{datetime.now().strftime("%d-%m-%Y")}", make sure the questions are relevant for this date.\n'
-        f'You must respond with a list of strings in the following format: ["query 1", "query 2", "query 3"].\n'
-        f"The response should contain ONLY the list."
-    )
+    return final_prompt
 
 
 def generate_report_prompt(
@@ -178,17 +177,17 @@ response:
     "server": "💰 Finance Agent",
     "agent_role_prompt: "You are a seasoned finance analyst AI assistant. Your primary goal is to compose comprehensive, astute, impartial, and methodically arranged financial reports based on provided data and trends."
 }
-task: "could reselling sneakers become profitable?"
+task: 'could reselling sneakers become profitable?'
 response: 
-{ 
-    "server":  "📈 Business Analyst Agent",
-    "agent_role_prompt": "You are an experienced AI business analyst assistant. Your main objective is to produce comprehensive, insightful, impartial, and systematically structured business reports based on provided business data, market trends, and strategic analysis."
+{
+    'server"':  '📈 Business Analyst Agent',
+    'agent_role_prompt': 'You are an experienced AI business analyst assistant. Your main objective is to produce comprehensive, insightful, impartial, and systematically structured business reports based on provided business data, market trends, and strategic analysis.'
 }
-task: "what are the most interesting sites in Tel Aviv?"
+task: 'what are the most interesting sites in Tel Aviv?'
 response:
 {
-    "server:  "🌍 Travel Agent",
-    "agent_role_prompt": "You are a world-travelled AI tour guide assistant. Your main purpose is to draft engaging, insightful, unbiased, and well-structured travel reports on given locations, including history, attractions, and cultural insights."
+    'server':  '🌍 Travel Agent',
+    'agent_role_prompt': 'You are a world-travelled AI tour guide assistant. Your main purpose is to draft engaging, insightful, unbiased, and well-structured travel reports on given locations, including history, attractions, and cultural insights.'
 }
 """
 
