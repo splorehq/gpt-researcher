@@ -24,10 +24,10 @@ class ResearchAgent:
 
         return report
 
-    async def run_subtopic_research(self, parent_query: str, subtopic: str, verbose: bool = True, source="web", headers=None, source_urls=None, include_domains=None, search_query_instructions=None):
+    async def run_subtopic_research(self, parent_query: str, subtopic: str, verbose: bool = True, source="web", headers=None, source_urls=None, include_domains=None, search_query_instructions=None, prompts_from_db=None):
         try:
             report = await self.research(parent_query=parent_query, query=subtopic,
-                                         research_report="subtopic_report", verbose=verbose, source=source, tone=self.tone, headers=None, source_urls=source_urls,include_domains=include_domains,search_query_instructions=search_query_instructions)
+                                         research_report="subtopic_report", verbose=verbose, source=source, tone=self.tone, headers=None, source_urls=source_urls,include_domains=include_domains,search_query_instructions=search_query_instructions, prompts_from_db=prompts_from_db)
         except Exception as e:
             print(f"{Fore.RED}Error in researching topic {subtopic}: {e}{Style.RESET_ALL}")
             report = None
@@ -59,11 +59,12 @@ class ResearchAgent:
         source_urls = task.get("source_urls", [])
         include_domains = task.get("include_domains", None)
         search_query_instructions = task.get("search_query_instructions", None)
+        prompts_from_db= task.get("prompts_from_db")
 
         if self.websocket and self.stream_output:
             await self.stream_output("logs", "depth_research", f"Running in depth research on the following report topic: {topic}", self.websocket)
         else:
             print_agent_output(f"Running in depth research on the following report topic: {topic}", agent="RESEARCHER")
         research_draft = await self.run_subtopic_research(parent_query=parent_query, subtopic=topic,
-                                                          verbose=verbose, source=source, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions)
+                                                          verbose=verbose, source=source, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions, prompts_from_db=prompts_from_db)
         return {"draft": research_draft}
