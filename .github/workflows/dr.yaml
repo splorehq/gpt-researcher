@@ -1,4 +1,4 @@
-name: Deploy GPT to EKS Stage using Helm
+name: Deploy GPT to EKS Stage using Helm on DR
 
 on:
   push:
