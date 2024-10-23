@@ -1,10 +1,10 @@
 #Ignore env containing secrets
-.env
+
 .venv
 .envrc
 
 #Ignore Virtual Env
-env/
+
 venv/
 .venv/
 
