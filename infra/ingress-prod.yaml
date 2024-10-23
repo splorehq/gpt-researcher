@@ -7,12 +7,12 @@ metadata:
     # The Ray Dashboard provides read and write access to the cluster. Anyone with access to the
     # ALB can launch arbitrary code execution on the Ray Cluster.
     kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/load-balancer-name: search-alb-rgpt
+    alb.ingress.kubernetes.io/load-balancer-name: search-alb-rgpt-dr
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/ssl-redirect: '443'
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}, {"HTTPS":443}]'
-    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:343698307601:certificate/f3782d7e-b4bd-41cd-8a3a-ca7f0f6568fa"
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:ap-southeast-1:343698307601:certificate/dbc712c3-2e0e-435e-bffb-4c48fae20280"
     # alb.ingress.kubernetes.io/group.name: "splore-search-tusd"
     alb.ingress.kubernetes.io/proxy-read-timeout: "36000"
     alb.ingress.kubernetes.io/proxy-send-timeout: "36000"
@@ -30,7 +30,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-  - host: gpt-researcher.search.splore.ai
+  - host: gpt-researcher-dr.search.splore.ai
     http:
       paths:
       - path: /
