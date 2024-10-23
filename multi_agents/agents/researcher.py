@@ -13,10 +13,10 @@ class ResearchAgent:
         self.tone = tone
 
     async def research(self, query: str, research_report: str = "research_report",
-                       parent_query: str = "", verbose=True, source="web", tone=None, headers=None, source_urls=None, include_domains=None, search_query_instructions=None):
+                       parent_query: str = "", verbose=True, source="web", tone=None, headers=None, source_urls=None, include_domains=None, search_query_instructions=None, prompts_from_db=None):
         # Initialize the researcher
         researcher = GPTResearcher(query=query, report_type=research_report, parent_query=parent_query,
-                                   verbose=verbose, report_source=source, tone=tone, websocket=self.websocket, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions, base_id=self.base_id, agent_id=self.agent_id)
+                                   verbose=verbose, report_source=source, tone=tone, websocket=self.websocket, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions, base_id=self.base_id, agent_id=self.agent_id, prompts_from_db=prompts_from_db)
        # Conduct research on the given query
         await researcher.conduct_research()
         # Write the report
@@ -24,10 +24,10 @@ class ResearchAgent:
 
         return report
 
-    async def run_subtopic_research(self, parent_query: str, subtopic: str, verbose: bool = True, source="web", headers=None, source_urls=None, include_domains=None, search_query_instructions=None):
+    async def run_subtopic_research(self, parent_query: str, subtopic: str, verbose: bool = True, source="web", headers=None, source_urls=None, include_domains=None, search_query_instructions=None, prompts_from_db=None):
         try:
             report = await self.research(parent_query=parent_query, query=subtopic,
-                                         research_report="subtopic_report", verbose=verbose, source=source, tone=self.tone, headers=None, source_urls=source_urls,include_domains=include_domains,search_query_instructions=search_query_instructions)
+                                         research_report="subtopic_report", verbose=verbose, source=source, tone=self.tone, headers=None, source_urls=source_urls,include_domains=include_domains,search_query_instructions=search_query_instructions, prompts_from_db=prompts_from_db)
         except Exception as e:
             print(f"{Fore.RED}Error in researching topic {subtopic}: {e}{Style.RESET_ALL}")
             report = None
@@ -40,6 +40,7 @@ class ResearchAgent:
         source_urls = task.get("source_urls", [])
         include_domains = task.get("include_domains", None)
         search_query_instructions = task.get("search_query_instructions", None)
+        prompts_from_db = task.get("prompts_from_db", None)
         
         if self.websocket and self.stream_output:
             await self.stream_output("status", "publishing", f"Starting Research…", self.websocket)
@@ -47,7 +48,7 @@ class ResearchAgent:
         else:
             print_agent_output(f"Running initial research on the following query: {query}", agent="RESEARCHER")
         return {"task": task, "initial_research": await self.research(query=query, verbose=task.get("verbose"),
-                                                                      source=source, tone=self.tone, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions)}
+                                                                      source=source, tone=self.tone, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions, prompts_from_db=prompts_from_db)}
 
     async def run_depth_research(self, draft_state: dict):
         task = draft_state.get("task")
@@ -58,11 +59,12 @@ class ResearchAgent:
         source_urls = task.get("source_urls", [])
         include_domains = task.get("include_domains", None)
         search_query_instructions = task.get("search_query_instructions", None)
+        prompts_from_db= task.get("prompts_from_db")
 
         if self.websocket and self.stream_output:
             await self.stream_output("logs", "depth_research", f"Running in depth research on the following report topic: {topic}", self.websocket)
         else:
             print_agent_output(f"Running in depth research on the following report topic: {topic}", agent="RESEARCHER")
         research_draft = await self.run_subtopic_research(parent_query=parent_query, subtopic=topic,
-                                                          verbose=verbose, source=source, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions)
+                                                          verbose=verbose, source=source, headers=self.headers, source_urls=source_urls, include_domains=include_domains, search_query_instructions=search_query_instructions, prompts_from_db=prompts_from_db)
         return {"draft": research_draft}

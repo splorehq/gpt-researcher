@@ -24,6 +24,12 @@ jobs:
       with:
         version: 'v1.27.0' # default is latest stable
       id: install
+    - name: Find and Replace - Using Secrets
+      run: |
+       find .env -type f -exec sed -i ''s/#{access}#/${{ secrets.AWS_ACCESS_KEY_ID }}/g'' {} \;
+    - name: Find and Replace - Using Secrets
+      run: |
+       find .env -type f -exec sed -i ''s/#{secret}#/${{ secrets.AWS_SECRET_ACCESS_KEY }}/g'' {} \;
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:

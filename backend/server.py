@@ -4,12 +4,14 @@ import os
 import re
 import time
 
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, File, UploadFile, Header
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, File, UploadFile, Header, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from typing import Annotated
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.utils import write_md_to_pdf, write_md_to_word, write_text_to_md
 from backend.websocket_manager import WebSocketManager
@@ -18,7 +20,12 @@ import shutil
 from multi_agents.main import run_research_task
 from gpt_researcher.document.document import DocumentLoader
 from gpt_researcher.master.actions import stream_output
-
+from backend.aws_secret_manager import AWSecretsManager
+from backend.psql import PSQLSessionMgr
+from backend import ext_service_config
+from db.db_utils import get_agent
+from backend.entities import AgentConfig
+from db.get_prompts import read_prompt_template_by_prompts_id
 
 class ResearchRequest(BaseModel):
     task: str
@@ -49,6 +56,15 @@ templates = Jinja2Templates(directory="./frontend")
 
 manager = WebSocketManager()
 
+# Instantiate the managers
+secret_mgr = AWSecretsManager(config=ext_service_config["aws_secrets"])
+psql_sess_mgr = PSQLSessionMgr(ext_service_config["psql"], secret_mgr)
+
+# Dependency to provide a session
+async def get_psql_session():
+    async with psql_sess_mgr.session() as sess:
+        yield sess
+
 # Dynamic directory for outputs once first research is run
 @app.on_event("startup")
 def startup_event():
@@ -71,7 +87,7 @@ def sanitize_filename(filename):
     return re.sub(r"[^\w\s-]", "", filename).strip()
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, psql_sess: Annotated[AsyncSession, Depends(get_psql_session)]):
     await manager.connect(websocket)
     try:
         while True:
@@ -95,10 +111,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     filename
                 )  # Sanitize the filename
                 report_source = json_data["value"].get("report_source")
+                agent_conf = await get_agent(psql_sess=psql_sess, base_id=None, agent_id=agent_id, agent_name=None)
+                agent_conf = AgentConfig(**agent_conf)
+                specialization, prompts_from_db = await read_prompt_template_by_prompts_id(psql_sess=psql_sess, cols=["name", "template"], prompts_id=agent_conf.prompts_id)
                 if task and report_type:
                     report = await manager.start_streaming(
-                        task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization,
-                        base_id, agent_id
+                        task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, specialization,
+                        base_id, agent_id, prompts_from_db, agent_conf
                     )
                     # Ensure report is a string
                     if not isinstance(report, str):

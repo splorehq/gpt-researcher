@@ -40,7 +40,8 @@ class GPTResearcher:
         include_domains = None,
         search_query_instructions = None,
         base_id=None,
-        agent_id=None
+        agent_id=None,
+        prompts_from_db=None
     ):
         """
         Initialize the GPT Researcher class.
@@ -82,6 +83,7 @@ class GPTResearcher:
         self.verbose: bool = verbose
         self.websocket = websocket
         self.headers = headers or {}
+        self.prompts_from_db = prompts_from_db
         # Ensure tone is an instance of Tone enum
         if isinstance(tone, dict):
             print(f"Invalid tone format: {tone}. Setting to default Tone.Objective.")
@@ -128,11 +130,12 @@ class GPTResearcher:
                 parent_query=self.parent_query,
                 cost_callback=self.add_costs,
                 headers=self.headers,
+                prompts_from_db=self.prompts_from_db
             )
 
         #overrite the search query prompt if it is provided in the config
         if self.search_query_instructions:
-            self.role = self.search_query_instructions
+            self.role = self.search_query_instructions["agent_role"]
 
         if self.verbose:
             await stream_output("logs", "agent_generated", self.agent, self.websocket)
@@ -357,7 +360,8 @@ class GPTResearcher:
             cfg=self.cfg,
             parent_query=self.parent_query,
             report_type=self.report_type,
-            cost_callback=self.add_costs
+            cost_callback=self.add_costs,
+            prompts_from_db=self.prompts_from_db
         )
 
         # If this is not part of a sub researcher, add original query to research for better results
@@ -573,6 +577,7 @@ class GPTResearcher:
             parent_query=self.parent_query,
             report_type=self.report_type,
             cost_callback=self.add_costs,
+            prompts_from_db=self.prompts_from_db
         )
 
         # If this is not part of a sub researcher, add original query to research for better results
@@ -775,6 +780,7 @@ class GPTResearcher:
             parent_query=self.parent_query,
             report_type=self.report_type,
             cost_callback=self.add_costs,
+            prompts_from_db=self.prompts_from_db
         )
     
     async def get_similar_written_contents_by_draft_section_titles(

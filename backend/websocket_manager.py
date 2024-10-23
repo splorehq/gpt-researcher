@@ -53,14 +53,14 @@ class WebSocketManager:
             del self.sender_tasks[websocket]
             del self.message_queues[websocket]
 
-    async def start_streaming(self, task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers=None, agent_specialization=None, base_id=None, agent_id=None):
+    async def start_streaming(self, task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers=None, agent_specialization=None, base_id=None, agent_id=None, prompts_from_db=None, agent_conf=None):
         """Start streaming the output."""
         tone = Tone[tone]
-        report = await run_agent(task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization, base_id, agent_id)
+        report = await run_agent(task, task_id, report_type, report_style, report_source, source_urls, tone, websocket, headers, agent_specialization, base_id, agent_id, prompts_from_db, agent_conf)
         return report
 
 
-async def run_agent(task, task_id, report_type, report_style, report_source, source_urls, tone: Tone, websocket, headers=None, agent_specialization=None, base_id=None, agent_id=None):
+async def run_agent(task, task_id, report_type, report_style, report_source, source_urls, tone: Tone, websocket, headers=None, agent_specialization=None, base_id=None, agent_id=None, prompts_from_db=None, agent_conf=None):
     """Run the agent."""
     # measure time
     start_time = datetime.datetime.now()
@@ -68,7 +68,7 @@ async def run_agent(task, task_id, report_type, report_style, report_source, sou
     config_path = ""
     # Instead of running the agent directly run it through the different report type classes
     if report_type == "multi_agents":
-        report = await run_research_task(query=task, task_id=task_id, websocket=websocket, stream_output=stream_output, tone=tone, headers=headers, report_style=report_style, source=report_source, source_urls=source_urls, agent_specialization=agent_specialization, base_id=base_id, agent_id=agent_id)
+        report = await run_research_task(query=task, task_id=task_id, websocket=websocket, stream_output=stream_output, tone=tone, headers=headers, report_style=report_style, source=report_source, source_urls=source_urls, agent_specialization=agent_specialization, base_id=base_id, agent_id=agent_id, prompts_from_db=prompts_from_db ,agent_conf=agent_conf)
         #report = await run_research_task(query=task, websocket=websocket, stream_output=stream_output, tone=tone, headers=headers)
         report = report.get("report", "")
     elif report_type == ReportType.DetailedReport.value:
