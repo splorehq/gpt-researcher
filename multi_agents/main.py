@@ -49,6 +49,7 @@ async def run_research_task(query, task_id=None, websocket=None, stream_output=N
 
     chief_editor = ChiefEditorAgent(task, websocket, stream_output, tone, headers, base_id, agent_id)
     research_report = await chief_editor.run_research_task()
+    research_report.pop('task')
 
     if websocket and stream_output:
         await stream_output("logs", "research_report", research_report, websocket)
